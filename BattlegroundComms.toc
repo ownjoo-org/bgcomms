@@ -6,13 +6,13 @@
 ## SavedVariables: BGCommsDB
 ## SavedVariablesPerCharacter: BGCommsCharDB
 
-# Utility modules (load first)
+# All modules must load BEFORE Core.lua since Core.lua requires them
 Logger.lua
-
-# Core files
-Core.lua
 Locations.lua
 Communications.lua
 UI.lua
 Macros.lua
 Settings.lua
+
+# Core addon (loads and initializes all modules)
+Core.lua
