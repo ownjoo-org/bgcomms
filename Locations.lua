@@ -1,10 +1,10 @@
--- Locations.lua - Battleground location definitions
+-- BGCommsLocations.lua - Battleground location definitions
 -- Easy to modify: just add new locations to the relevant battleground table
 
-Locations = {}
+BGCommsLocations = {}
 
 -- Arathi Basin zones
-Locations.ArathiBasin = {
+BGCommsLocations.ArathiBasin = {
     "Stables",
     "Blacksmith",
     "Farm",
@@ -13,7 +13,7 @@ Locations.ArathiBasin = {
 }
 
 -- Alterac Valley zones
-Locations.AlteracValley = {
+BGCommsLocations.AlteracValley = {
     "Dun Baldar",
     "Frostwolf Keep",
     "Galv",
@@ -21,21 +21,21 @@ Locations.AlteracValley = {
 }
 
 -- Warsong Gulch zones
-Locations.WarsongGulch = {
+BGCommsLocations.WarsongGulch = {
     "Alliance Base",
     "Horde Base",
     "Midfield",
 }
 
 -- Bastion of Twilight (example for future expansion)
-Locations.BastionOfTwilight = {
+BGCommsLocations.BastionOfTwilight = {
     "East Flag",
     "West Flag",
     "Midfield",
 }
 
 -- Temple of Kotmogu
-Locations.TempleOfKotmogu = {
+BGCommsLocations.TempleOfKotmogu = {
     "North",
     "South",
     "East",
@@ -44,7 +44,7 @@ Locations.TempleOfKotmogu = {
 }
 
 -- Silvershard Mines
-Locations.SilvershadMines = {
+BGCommsLocations.SilvershadMines = {
     "North Mine",
     "South Mine",
     "East Entrance",
@@ -53,7 +53,7 @@ Locations.SilvershadMines = {
 }
 
 -- Deepwind Gorge
-Locations.DeepwindGorge = {
+BGCommsLocations.DeepwindGorge = {
     "North Cart",
     "Center Cart",
     "South Cart",
@@ -62,28 +62,31 @@ Locations.DeepwindGorge = {
 }
 
 -- Default/fallback locations
-Locations.Default = {
+BGCommsLocations.Default = {
     "Defense",
     "Attack",
     "Midfield",
 }
 
 -- Detect current battleground type
-function Locations:GetCurrentBattlegroundType()
-    -- Check if player is in a battleground
-    if not IsInBattleground() then
+function BGCommsLocations:GetCurrentBattlegroundType()
+    -- Check if player is in a battleground (using C_PvP namespace for WoW 12.0)
+    local inBattleground = false
+    if C_PvP and C_PvP.IsInBattleground then
+        inBattleground = C_PvP.IsInBattleground()
+    end
+
+    if not inBattleground then
         return nil
     end
 
-    -- Get battleground information
-    local bgName, bgType, _, _, _, _, _ = GetBattlegroundInfo()
-
-    -- Return battleground type/name
-    return bgType or bgName
+    -- Get the current zone text as battleground name
+    local zone = GetRealZoneText()
+    return zone
 end
 
 -- Map battleground names to location tables
-function Locations:GetBattlegroundLocationMap()
+function BGCommsLocations:GetBattlegroundLocationMap()
     return {
         -- Common battleground identifiers
         ["Arathi Basin"] = self.ArathiBasin,
@@ -97,7 +100,7 @@ function Locations:GetBattlegroundLocationMap()
 end
 
 -- Get locations for current battleground
-function Locations:GetCurrentBattlegroundZones()
+function BGCommsLocations:GetCurrentBattlegroundZones()
     local bgType = self:GetCurrentBattlegroundType()
 
     if not bgType then
@@ -118,13 +121,13 @@ function Locations:GetCurrentBattlegroundZones()
 end
 
 -- Get a zone name by index
-function Locations:GetZone(index)
+function BGCommsLocations:GetZone(index)
     local zones = self:GetCurrentBattlegroundZones()
     return zones[index]
 end
 
 -- Get the player's current location
-function Locations:GetPlayerLocation()
+function BGCommsLocations:GetPlayerLocation()
     -- Try to get sub-zone (more specific location)
     local subZone = GetSubZoneText()
     if subZone and subZone ~= "" then

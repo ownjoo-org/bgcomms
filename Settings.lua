@@ -1,45 +1,66 @@
--- Settings.lua - Settings panel UI and management
--- Note: Communications and UI are loaded globally by WoW before this file
+-- Settings.lua - Settings panel BGCommsUI and management
+-- Note: BGCommsCommunications and BGCommsUI are loaded globally by WoW before this file
+-- RENAMED: BGCommsSettingsPanel to avoid conflict with Blizzard's global Settings object
 
-Settings = {}
-Settings.frame = nil
-Settings.channelDropdown = nil
-Settings.opacityValue = nil
-Settings.lockCheckbox = nil
-Settings.smartChannelCheckbox = nil
+BGCommsSettingsPanel = {}
+BGCommsSettingsPanel.frame = nil
+BGCommsSettingsPanel.channelDropdown = nil
+BGCommsSettingsPanel.opacityValue = nil
+BGCommsSettingsPanel.lockCheckbox = nil
+BGCommsSettingsPanel.smartChannelCheckbox = nil
 
-function Settings:CreateFrame()
+function BGCommsSettingsPanel:CreateFrame()
+    BGCommsLogger:Debug("CreateFrame (settings) called, frame exists: " .. tostring(self.frame ~= nil))
     if self.frame then return end
 
+    BGCommsLogger:Debug("Creating settings frame object...")
     -- Create settings frame
     local frame = CreateFrame("Frame", "BGCommsSettingsFrame", UIParent)
+    BGCommsLogger:Debug("Settings frame object created: " .. tostring(frame))
     frame:SetSize(250, 280)
 
     -- Restore position from SavedVariables or use defaults
-    local posX = BGCommsDB and BGCommsDB.settingsPanelX or -100
-    local posY = BGCommsDB and BGCommsDB.settingsPanelY or 0
+    -- Bounds check: if position is clearly off-screen (legacy bad coordinates), reset to default
+    local posX = -100
+    local posY = 0
+    if BGCommsDB and BGCommsDB.settingsPanelX then
+        -- Only use saved position if it looks reasonable (offset, not absolute screen coordinate)
+        if math.abs(BGCommsDB.settingsPanelX) < 500 then
+            posX = BGCommsDB.settingsPanelX
+        end
+    end
+    if BGCommsDB and BGCommsDB.settingsPanelY then
+        if math.abs(BGCommsDB.settingsPanelY) < 500 then
+            posY = BGCommsDB.settingsPanelY
+        end
+    end
     frame:SetPoint("CENTER", UIParent, "CENTER", posX, posY)
 
-    frame:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-        edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-        tile = true,
-        tileSize = 16,
-        edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
-    frame:SetBackdropColor(0, 0, 0, 0.7)
-    frame:SetBackdropBorderColor(1, 1, 1, 0.8)
+    -- SetBackdrop calls are deprecated in WoW Midnight 12.0 and removed
+    -- frame:SetBackdrop({
+    --     bgFile = "Interface/Tooltips/BGCommsUI-Tooltip-Background",
+    --     edgeFile = "Interface/Tooltips/BGCommsUI-Tooltip-Border",
+    --     tile = true,
+    --     tileSize = 16,
+    --     edgeSize = 16,
+    --     insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    -- })
+    -- frame:SetBackdropColor(0, 0, 0, 0.7)
+    -- frame:SetBackdropBorderColor(1, 1, 1, 0.8)
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving)
     frame:SetScript("OnDragStop", function(dragFrame)
         dragFrame:StopMovingOrSizing()
-        -- Save settings panel position
+        -- Save settings panel position as center offset from UIParent center
         if BGCommsDB then
-            BGCommsDB.settingsPanelX = dragFrame:GetLeft()
-            BGCommsDB.settingsPanelY = dragFrame:GetTop()
+            local frameCenterX = dragFrame:GetLeft() + dragFrame:GetWidth() / 2
+            local frameCenterY = dragFrame:GetTop() + dragFrame:GetHeight() / 2
+            local uiCenterX = UIParent:GetLeft() + UIParent:GetWidth() / 2
+            local uiCenterY = UIParent:GetTop() + UIParent:GetHeight() / 2
+            BGCommsDB.settingsPanelX = frameCenterX - uiCenterX
+            BGCommsDB.settingsPanelY = frameCenterY - uiCenterY
         end
     end)
     frame:Hide()  -- Hidden by default
@@ -58,50 +79,68 @@ function Settings:CreateFrame()
         self:Hide()
     end)
 
-    -- Channel selection label
-    local channelLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    channelLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -40)
-    channelLabel:SetText("Channel:")
-
-    -- Channel dropdown (simple text display for now)
-    local channelDropdown = CreateFrame("Button", "BGChannelDropdown", frame, "GameMenuButtonTemplate")
-    channelDropdown:SetSize(200, 25)
-    channelDropdown:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -60)
-    channelDropdown:SetText(Communications:GetChatChannel())
-    channelDropdown:SetScript("OnClick", function()
-        self:ShowChannelMenu()
-    end)
-    self.channelDropdown = channelDropdown
-
-    -- Opacity label
+    -- Opacity label (moved up since channel dropdown is now in primary frame)
     local opacityLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    opacityLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -100)
+    opacityLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -40)
     opacityLabel:SetText("Opacity:")
 
-    -- Opacity minus button
-    local opacityMinus = CreateFrame("Button", "BGSettingsOpacityMinus", frame, "GameMenuButtonTemplate")
-    opacityMinus:SetSize(30, 25)
-    opacityMinus:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -120)
-    opacityMinus:SetText("-")
-    opacityMinus:SetScript("OnClick", function()
-        UI:AdjustOpacity(-0.1)
-        self:UpdateOpacityDisplay()
-    end)
+    -- Opacity slider (0-100%)
+    local opacitySlider = CreateFrame("Slider", "BGSettingsOpacitySlider", frame)
+    opacitySlider:SetSize(150, 15)
+    opacitySlider:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -120)
+    opacitySlider:SetMinMaxValues(0, 100)
+    opacitySlider:SetValue(50)  -- Default to 50%
+    opacitySlider:SetValueStep(1)
+    opacitySlider:SetOrientation("HORIZONTAL")
+
+    -- Slider texture
+    local sliderTex = opacitySlider:CreateTexture(nil, "BACKGROUND")
+    sliderTex:SetAllPoints(opacitySlider)
+    sliderTex:SetTexture("Interface/Buttons/UI-SliderBar-Background")
+
+    -- Slider thumb
+    local thumb = opacitySlider:GetThumbTexture()
+    if thumb then
+        thumb:SetTexture("Interface/Buttons/UI-SliderBar-Button-Horizontal")
+        thumb:SetSize(16, 16)
+    end
 
     -- Opacity value display
     local opacityValue = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    opacityValue:SetPoint("LEFT", opacityMinus, "RIGHT", 10, 0)
-    opacityValue:SetText("0.5")
+    opacityValue:SetPoint("LEFT", opacitySlider, "RIGHT", 10, 0)
+    opacityValue:SetText("50%")
+    opacityValue:SetWidth(50)
     self.opacityValue = opacityValue
+    self.opacitySlider = opacitySlider
 
-    -- Opacity plus button
-    local opacityPlus = CreateFrame("Button", "BGSettingsOpacityPlus", frame, "GameMenuButtonTemplate")
-    opacityPlus:SetSize(30, 25)
-    opacityPlus:SetPoint("LEFT", opacityValue, "RIGHT", 10, 0)
-    opacityPlus:SetText("+")
-    opacityPlus:SetScript("OnClick", function()
-        UI:AdjustOpacity(0.1)
-        self:UpdateOpacityDisplay()
+    -- Slider value change handler
+    opacitySlider:SetScript("OnValueChanged", function(self, value)
+        value = math.floor(value)
+        local opacity = value / 100
+
+        if BGCommsDB then
+            BGCommsDB.backgroundOpacity = opacity
+        end
+
+        -- Update display
+        opacityValue:SetText(value .. "%")
+
+        -- Apply opacity to main frame background
+        if BGCommsUI and BGCommsUI.backgroundTexture then
+            if value == 0 then
+                -- At 0, make background invisible and non-clickable
+                BGCommsUI.backgroundTexture:SetAlpha(0)
+                if BGCommsUI.frame then
+                    BGCommsUI.frame:EnableMouse(false)
+                end
+            else
+                -- At any positive value, enable clicking and set opacity
+                BGCommsUI.backgroundTexture:SetAlpha(opacity)
+                if BGCommsUI.frame then
+                    BGCommsUI.frame:EnableMouse(true)
+                end
+            end
+        end
     end)
 
     -- Lock toggle label
@@ -113,7 +152,7 @@ function Settings:CreateFrame()
     local lockCheckbox = CreateFrame("CheckButton", "BGSettingsLockCheckbox", frame, "ChatConfigCheckButtonTemplate")
     lockCheckbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -180)
     lockCheckbox:SetScript("OnClick", function(self)
-        UI:ToggleLock()
+        BGCommsUI:ToggleLock()
         self:SetChecked(BGCommsDB.isLocked)
     end)
     self.lockCheckbox = lockCheckbox
@@ -131,102 +170,182 @@ function Settings:CreateFrame()
     end)
     self.smartChannelCheckbox = smartCheckbox
 
+    -- Hide Title label
+    local hideTitleLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    hideTitleLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -260)
+    hideTitleLabel:SetText("Hide Title:")
+
+    -- Hide Title checkbox
+    local hideTitleCheckbox = CreateFrame("CheckButton", "BGSettingsHideTitleCheckbox", frame, "ChatConfigCheckButtonTemplate")
+    hideTitleCheckbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -280)
+    hideTitleCheckbox:SetScript("OnClick", function(self)
+        BGCommsDB.hideTitle = self:GetChecked()
+        if BGCommsUI and BGCommsUI.title then
+            if BGCommsDB.hideTitle then
+                BGCommsUI.title:Hide()
+            else
+                BGCommsUI.title:Show()
+            end
+        end
+    end)
+    self.hideTitleCheckbox = hideTitleCheckbox
+
     self.frame = frame
     self:UpdateAllSettings()
 end
 
 -- Update all settings display from SavedVariables
-function Settings:UpdateAllSettings()
-    if not self.frame then return end
+function BGCommsSettingsPanel:UpdateAllSettings()
+    BGCommsLogger:Debug("UpdateAllSettings called")
+    if not self.frame then
+        BGCommsLogger:Debug("UpdateAllSettings: frame is nil!")
+        return
+    end
 
+    BGCommsLogger:Debug("Updating channel dropdown...")
     self:UpdateChannelDropdown()
+    BGCommsLogger:Debug("Updating opacity display...")
     self:UpdateOpacityDisplay()
+    BGCommsLogger:Debug("Updating lock display...")
     self:UpdateLockDisplay()
+    BGCommsLogger:Debug("Updating smart channel display...")
     self:UpdateSmartChannelDisplay()
+    BGCommsLogger:Debug("Updating hide title display...")
+    self:UpdateHideTitleDisplay()
+    BGCommsLogger:Debug("UpdateAllSettings complete")
 end
 
-function Settings:UpdateChannelDropdown()
+function BGCommsSettingsPanel:UpdateChannelDropdown()
     if self.channelDropdown then
-        self.channelDropdown:SetText(Communications:GetChatChannel())
+        self.channelDropdown:SetText(BGCommsCommunications:GetChatChannel())
     end
 end
 
-function Settings:UpdateOpacityDisplay()
+function BGCommsSettingsPanel:UpdateOpacityDisplay()
+    if self.opacitySlider then
+        local opacity = BGCommsDB and BGCommsDB.backgroundOpacity or 0.5
+        self.opacitySlider:SetValue(opacity * 100)
+    end
     if self.opacityValue then
         local opacity = BGCommsDB and BGCommsDB.backgroundOpacity or 0.5
-        self.opacityValue:SetText(string.format("%.1f", opacity))
+        self.opacityValue:SetText(math.floor(opacity * 100) .. "%")
     end
 end
 
-function Settings:UpdateLockDisplay()
+function BGCommsSettingsPanel:UpdateLockDisplay()
     if self.lockCheckbox then
         self.lockCheckbox:SetChecked(BGCommsDB.isLocked)
     end
 end
 
-function Settings:UpdateSmartChannelDisplay()
+function BGCommsSettingsPanel:UpdateSmartChannelDisplay()
     if self.smartChannelCheckbox then
         self.smartChannelCheckbox:SetChecked(BGCommsDB.useSmartChannelDetection)
     end
 end
 
-function Settings:ShowChannelMenu()
-    -- Create a dropdown menu for channel selection
-    local menu = {
-        {
-            text = "BGCOMMS",
-            func = function()
-                Communications:SetChatChannel("BGCOMMS")
-                self:UpdateChannelDropdown()
-            end
-        },
-        {
-            text = "PARTY",
-            func = function()
-                Communications:SetChatChannel("PARTY")
-                self:UpdateChannelDropdown()
-            end
-        },
-        {
-            text = "RAID",
-            func = function()
-                Communications:SetChatChannel("RAID")
-                self:UpdateChannelDropdown()
-            end
-        },
-        {
-            text = "BATTLEGROUND",
-            func = function()
-                Communications:SetChatChannel("BATTLEGROUND")
-                self:UpdateChannelDropdown()
-            end
-        },
-        {
-            text = "SAY",
-            func = function()
-                Communications:SetChatChannel("SAY")
-                self:UpdateChannelDropdown()
-            end
-        },
-    }
-
-    EasyMenu(menu, CreateFrame("Frame", "BGChannelMenu", UIParent, "UIDropDownMenuTemplate"), "cursor", 0, 0, "TOPLEFT")
-end
-
-function Settings:ToggleFrame()
-    if self.frame then
-        if self.frame:IsShown() then
-            self:Hide()
-        else
-            self:Show()
-        end
-    else
-        self:CreateFrame()
-        self:Show()
+function BGCommsSettingsPanel:UpdateHideTitleDisplay()
+    if self.hideTitleCheckbox then
+        self.hideTitleCheckbox:SetChecked(BGCommsDB.hideTitle or false)
     end
 end
 
-function Settings:Show()
+function BGCommsSettingsPanel:ShowChannelMenu()
+    -- Create a proper dropdown menu for channel selection
+    local channels = {"BGCOMMS", "PARTY", "RAID", "BATTLEGROUND", "SAY"}
+
+    -- Hide old dropdown if it exists
+    if BGChannelDropdownMenu then
+        BGChannelDropdownMenu:Hide()
+    end
+
+    -- Create dropdown frame with proper strata/level to appear on top
+    local dropdownFrame = CreateFrame("Frame", "BGChannelDropdownMenu", UIParent)
+    dropdownFrame:SetFrameStrata("DIALOG")
+    dropdownFrame:SetFrameLevel(100)
+    dropdownFrame:SetSize(140, 5 + (#channels * 28))
+    dropdownFrame:SetPoint("TOP", self.channelDropdown, "BOTTOM", 0, -5)
+
+    -- Background with 70% opacity
+    local bgTexture = dropdownFrame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetAllPoints(dropdownFrame)
+    bgTexture:SetColorTexture(0.1, 0.1, 0.1, 0.7)
+
+    -- Border texture for visual definition
+    local borderTexture = dropdownFrame:CreateTexture(nil, "BORDER")
+    borderTexture:SetAllPoints(dropdownFrame)
+    borderTexture:SetColorTexture(0.5, 0.5, 0.5, 0.8)
+    borderTexture:SetPoint("TOPLEFT", dropdownFrame, "TOPLEFT", 0, 0)
+    borderTexture:SetSize(140, 1)  -- Top border
+
+    -- Create buttons for each channel
+    for i, channel in ipairs(channels) do
+        local btn = CreateFrame("Button", "BGChannelOption" .. i, dropdownFrame)
+        btn:SetFrameLevel(101)  -- Above background
+        btn:SetSize(130, 24)
+        btn:SetPoint("TOPLEFT", dropdownFrame, "TOPLEFT", 5, -(2 + (i-1) * 28))
+
+        -- Button background texture (highlight on hover)
+        local btnBg = btn:CreateTexture(nil, "BACKGROUND")
+        btnBg:SetAllPoints(btn)
+        btnBg:SetColorTexture(0, 0, 0, 0)  -- Transparent by default
+        btn.bgTexture = btnBg
+
+        -- Button text
+        local text = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        text:SetAllPoints(btn)
+        text:SetText(channel)
+        text:SetJustifyH("LEFT")
+        text:SetJustifyV("MIDDLE")
+
+        -- Click handler
+        btn:SetScript("OnClick", function()
+            BGCommsCommunications:SetChatChannel(channel)
+            self:UpdateChannelDropdown()
+            dropdownFrame:Hide()
+        end)
+
+        -- Hover effects
+        btn:SetScript("OnEnter", function(self)
+            self.bgTexture:SetColorTexture(0.2, 0.5, 1, 0.6)  -- Blue highlight
+        end)
+
+        btn:SetScript("OnLeave", function(self)
+            self.bgTexture:SetColorTexture(0, 0, 0, 0)  -- Clear
+        end)
+    end
+
+    dropdownFrame:Show()
+end
+
+function BGCommsSettingsPanel:ToggleFrame()
+    BGCommsLogger:Debug("Settings ToggleFrame called, frame exists: " .. tostring(self.frame ~= nil))
+    if self.frame then
+        if self.frame:IsShown() then
+            BGCommsLogger:Debug("Hiding settings")
+            self:Hide()
+        else
+            BGCommsLogger:Debug("Showing settings")
+            self:Show()
+        end
+    else
+        BGCommsLogger:Debug("Creating settings frame...")
+        local success, err = pcall(function()
+            self:CreateFrame()
+        end)
+        BGCommsLogger:Debug("pcall returned, success: " .. tostring(success))
+        if success then
+            BGCommsLogger:Debug("Settings frame created, showing...")
+            BGCommsLogger:Debug("self.frame = " .. tostring(self.frame))
+            self:Show()
+            BGCommsLogger:Debug("After Show(), frame visible: " .. tostring(self.frame:IsVisible()))
+        else
+            BGCommsLogger:Error("ERROR creating settings frame: " .. tostring(err))
+        end
+    end
+end
+
+function BGCommsSettingsPanel:Show()
     if not self.frame then
         self:CreateFrame()
     end
@@ -234,7 +353,7 @@ function Settings:Show()
     self.frame:Show()
 end
 
-function Settings:Hide()
+function BGCommsSettingsPanel:Hide()
     if self.frame then
         self.frame:Hide()
     end

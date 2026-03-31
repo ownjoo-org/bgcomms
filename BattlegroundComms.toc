@@ -3,7 +3,7 @@
 ## Notes: Simple battleground communication addon with inter-addon channel support
 ## Author: You
 ## Version: 0.3.0
-## SavedVariables: BGCommsDB
+## SavedVariables: BGCommsDB, BGCommsDebugLog
 ## SavedVariablesPerCharacter: BGCommsCharDB
 
 # All modules must load BEFORE Core.lua since Core.lua requires them

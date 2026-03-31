@@ -1,21 +1,21 @@
 -- Core.lua - Main addon initialization
--- Note: All modules (Logger, Communications, Locations, UI, Macros, Settings) are loaded
+-- Note: All modules (BGCommsLogger, BGCommsCommunications, BGCommsLocations, BGCommsUI, BGCommsMacros, Settings) are loaded
 -- by WoW before this file runs due to the .toc file load order, so they're available globally
 
 BGComms = {}
 
--- Log startup (Logger is already loaded globally)
-if Logger then
-    Logger:Debug("BattlegroundComms Core.lua loaded")
+-- Log startup (BGCommsLogger is already loaded globally)
+if BGCommsLogger then
+    BGCommsLogger:Debug("BattlegroundComms Core.lua loaded")
 end
 
 function BGComms:Initialize()
-    Logger:Info("=== BattlegroundComms Initialize Started ===")
+    BGCommsLogger:Info("=== BattlegroundComms Initialize Started ===")
 
     -- Initialize SavedVariables
     BGCommsDB = BGCommsDB or {}
     BGCommsCharDB = BGCommsCharDB or {}
-    Logger:Debug("SavedVariables initialized")
+    BGCommsLogger:Debug("SavedVariables initialized")
 
     -- Initialize SavedVariables defaults
     BGCommsDB.chatChannel = BGCommsDB.chatChannel or "PARTY"
@@ -23,62 +23,64 @@ function BGComms:Initialize()
     BGCommsDB.windowY = BGCommsDB.windowY or 200
     BGCommsDB.isLocked = BGCommsDB.isLocked or false
     BGCommsDB.backgroundOpacity = BGCommsDB.backgroundOpacity or 0.5
-    BGCommsDB.useSmartChannelDetection = BGCommsDB.useSmartChannelDetection ~= false  -- Default true
+    BGCommsDB.useSmartChannelDetection = BGCommsDB.useSmartChannelDetection ~= false
     BGCommsDB.settingsPanelX = BGCommsDB.settingsPanelX or -100
     BGCommsDB.settingsPanelY = BGCommsDB.settingsPanelY or 0
     BGCommsDB.minimapIconX = BGCommsDB.minimapIconX or 0
     BGCommsDB.minimapIconY = BGCommsDB.minimapIconY or 0
+    BGCommsDB.hideTitle = BGCommsDB.hideTitle or false
     BGCommsCharDB.customMacros = BGCommsCharDB.customMacros or {}
-    Logger:Debug("SavedVariables defaults set")
+    BGCommsLogger:Debug("SavedVariables defaults set")
 
     -- Restore chat channel from SavedVariables
-    Logger:Debug("Restoring chat channel: " .. BGCommsDB.chatChannel)
-    Communications:SetChatChannel(BGCommsDB.chatChannel)
+    BGCommsLogger:Debug("Restoring chat channel: " .. BGCommsDB.chatChannel)
+    BGCommsCommunications:SetChatChannel(BGCommsDB.chatChannel)
 
-    -- Join the BGCOMMS channel for future inter-addon communication
-    Logger:Debug("Joining BGCOMMS channel...")
-    JoinChannelByName("BGCOMMS", "", 1, false)
-    Logger:Debug("BGCOMMS channel join initiated")
-
-    -- Create the UI and Settings panels
-    Logger:Debug("Creating UI frame...")
-    UI:CreateFrame()
-    UI:Show()
-    Logger:Debug("UI frame created and shown")
-
-    Logger:Debug("Creating Settings frame...")
-    Settings:CreateFrame()
-    Logger:Debug("Settings frame created")
-
-    -- Register slash commands
+    -- Register slash commands (minimal - no frame creation yet)
     SLASH_BGCOMMS1 = "/bgcomms"
     SLASH_BGCOMMS2 = "/bgc"
     SlashCmdList["BGCOMMS"] = function(msg)
         self:HandleSlashCommand(msg)
     end
-    Logger:Debug("Slash commands registered")
+    BGCommsLogger:Debug("Slash commands registered")
 
-    Logger:Info("=== BattlegroundComms Initialize Complete ===")
-    Logger:Info("Addon loaded! Use /bgc to toggle the window.")
-    print("|cFF00FF00[BGComms]|r Addon loaded! Use /bgc to toggle the window.")
+    BGCommsLogger:Info("=== BattlegroundComms Initialize Complete ===")
+    BGCommsLogger:Info("Addon loaded! Use /bgc to open the window.")
+    print("|cFF00FF00[BGComms]|r Addon loaded! Use /bgc to open the window.")
 end
 
 function BGComms:HandleSlashCommand(msg)
+    -- Normalize input: lowercase for comparison
+    msg = (msg or ""):lower()
+
     if msg == "" then
-        UI:ToggleFrame()
+        BGCommsUI:ToggleFrame()
+    elseif msg == "help" or msg == "?" then
+        self:PrintHelp()
     elseif msg == "hide" then
-        UI:Hide()
+        BGCommsUI:Hide()
     elseif msg == "show" then
-        UI:Show()
-    elseif msg == "settings" then
-        Settings:ToggleFrame()
+        BGCommsUI:Show()
+    elseif msg == "settings" or msg == "config" then
+        BGCommsSettingsPanel:ToggleFrame()
     elseif msg == "clear" then
-        Communications:SendClear()
+        BGCommsCommunications:SendClear()
     elseif msg == "debug" then
-        Logger:PrintHistory()
+        BGCommsLogger:PrintHistory()
+    elseif string.sub(msg, 1, 10) == "debug_mode" then
+        local mode = string.sub(msg, 12):lower()
+        if mode == "on" then
+            BGCommsLogger:SetDebugMode(true)
+        elseif mode == "off" then
+            BGCommsLogger:SetDebugMode(false)
+        else
+            print("|cFF00FF00[BGComms]|r Usage: /bgc debug_mode <on|off>")
+        end
+    elseif msg == "exportlog" then
+        BGCommsLogger:ExportDebugLog()
     elseif string.sub(msg, 1, 3) == "inc" then
         local location = string.sub(msg, 5)  -- Everything after "inc "
-        Communications:SendIncoming(location)
+        BGCommsCommunications:SendIncoming(location)
     elseif string.sub(msg, 1, 7) == "channel" then
         self:HandleChannelCommand(string.sub(msg, 9))  -- Everything after "channel "
     elseif string.sub(msg, 1, 5) == "macro" then
@@ -86,16 +88,34 @@ function BGComms:HandleSlashCommand(msg)
     elseif string.sub(msg, 1, 12) == "smartchannel" then
         self:HandleSmartChannelCommand(string.sub(msg, 14))  -- Everything after "smartchannel "
     else
-        print("|cFF00FF00[BGComms]|r Unknown command: " .. msg)
-        print("|cFF00FF00[BGComms]|r Usage: /bgc [show|hide|settings|clear|inc <location>|channel <name>|macro ...|smartchannel on|off|debug]")
+        print("|cFF00FF00[BGComms]|r Unknown command: /" .. msg)
+        print("|cFF00FF00[BGComms]|r Type /bgc help for available commands")
     end
+end
+
+function BGComms:PrintHelp()
+    print("|cFF00FF00[BGComms]|r Available Commands:")
+    print("|cFFFFFF00/bgc|r - Toggle main window")
+    print("|cFFFFFF00/bgc show|r - Show main window")
+    print("|cFFFFFF00/bgc hide|r - Hide main window")
+    print("|cFFFFFF00/bgc settings|r - Open settings panel")
+    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (PARTY/RAID/BATTLEGROUND/BGCOMMS/SAY)")
+    print("|cFFFFFF00/bgc inc <location>|r - Send incoming message")
+    print("|cFFFFFF00/bgc clear|r - Send clear message")
+    print("|cFFFFFF00/bgc smartchannel on|off|r - Toggle smart channel detection")
+    print("|cFFFFFF00/bgc macro add <name> <msg>|r - Create macro")
+    print("|cFFFFFF00/bgc macro remove <name>|r - Delete macro")
+    print("|cFFFFFF00/bgc macro list|r - List macros")
+    print("|cFFFFFF00/bgc debug|r - Show debug log")
+    print("|cFFFFFF00/bgc debug_mode on|off|r - Enable/disable debug logging to disk")
+    print("|cFFFFFF00/bgc exportlog|r - Export debug log from disk")
 end
 
 function BGComms:HandleChannelCommand(msg)
     local channel = msg:upper():match("%S+")
 
     if not channel or channel == "" then
-        print("|cFF00FF00[BGComms]|r Current channel: " .. Communications:GetChatChannel())
+        print("|cFF00FF00[BGComms]|r Current channel: " .. BGCommsCommunications:GetChatChannel())
         print("|cFF00FF00[BGComms]|r Usage: /bgc channel <PARTY|RAID|BATTLEGROUND|BGCOMMS|SAY>")
         return
     end
@@ -107,8 +127,8 @@ function BGComms:HandleChannelCommand(msg)
         return
     end
 
-    Communications:SetChatChannel(channel)
-    Settings:UpdateChannelDropdown()
+    BGCommsCommunications:SetChatChannel(channel)
+    BGCommsSettingsPanel:UpdateChannelDropdown()
     print("|cFF00FF00[BGComms]|r Channel changed to: " .. channel)
 end
 
@@ -141,8 +161,8 @@ function BGComms:HandleMacroCommand(msg)
         end
         local macroName = string.sub(remainder, 1, spaceIndex - 1)
         local macroMessage = string.sub(remainder, spaceIndex + 1)
-        Macros:AddMacro(macroName, macroMessage)
-        UI:RefreshUI()
+        BGCommsMacros:AddMacro(macroName, macroMessage)
+        BGCommsUI:RefreshUI()
         print("|cFF00FF00[BGComms]|r Macro '" .. macroName .. "' added.")
     elseif command == "rem" then
         -- /bgc macro remove <name>
@@ -151,15 +171,15 @@ function BGComms:HandleMacroCommand(msg)
             print("|cFF00FF00[BGComms]|r Usage: /bgc macro remove <name>")
             return
         end
-        if Macros:RemoveMacro(macroName) then
-            UI:RefreshUI()
+        if BGCommsMacros:RemoveMacro(macroName) then
+            BGCommsUI:RefreshUI()
             print("|cFF00FF00[BGComms]|r Macro '" .. macroName .. "' removed.")
         else
             print("|cFF00FF00[BGComms]|r Macro '" .. macroName .. "' not found.")
         end
     elseif command == "lis" then
         -- /bgc macro list
-        Macros:ListMacros()
+        BGCommsMacros:ListMacros()
     else
         print("|cFF00FF00[BGComms]|r Unknown macro command: " .. command)
         print("|cFF00FF00[BGComms]|r Usage: /bgc macro [add <name> <message>|remove <name>|list]")
@@ -169,19 +189,24 @@ end
 -- Initialize when addon loads
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
+frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, addonName)
-    if addonName == "BattlegroundComms" then
-        Logger:Info("ADDON_LOADED event triggered for BattlegroundComms")
+    if event == "ADDON_LOADED" and addonName == "BattlegroundComms" then
+        BGCommsLogger:Info("ADDON_LOADED event triggered for BattlegroundComms")
+        -- Don't initialize here - wait for PLAYER_LOGIN
+    elseif event == "PLAYER_LOGIN" then
+        BGCommsLogger:Info("PLAYER_LOGIN event triggered")
         local success, errorMsg = pcall(function()
             BGComms:Initialize()
         end)
 
         if not success then
-            Logger:Error("Failed to initialize addon: " .. tostring(errorMsg))
+            BGCommsLogger:Error("Failed to initialize addon: " .. tostring(errorMsg))
         else
-            Logger:Info("Addon initialization successful!")
+            BGCommsLogger:Info("Addon initialization successful!")
         end
 
         self:UnregisterEvent("ADDON_LOADED")
+        self:UnregisterEvent("PLAYER_LOGIN")
     end
 end)

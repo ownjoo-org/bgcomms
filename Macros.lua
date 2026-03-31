@@ -1,10 +1,10 @@
--- Macros.lua - Manage custom battleground communication macros
--- Note: Communications is loaded globally by WoW before this file
+-- BGCommsMacros.lua - Manage custom battleground communication macros
+-- Note: BGCommsCommunications is loaded globally by WoW before this file
 
-Macros = {}
+BGCommsMacros = {}
 
 -- Add a custom macro
-function Macros:AddMacro(name, message)
+function BGCommsMacros:AddMacro(name, message)
     if not BGCommsCharDB then
         BGCommsCharDB = {}
     end
@@ -17,7 +17,7 @@ function Macros:AddMacro(name, message)
 end
 
 -- Remove a custom macro
-function Macros:RemoveMacro(name)
+function BGCommsMacros:RemoveMacro(name)
     if BGCommsCharDB and BGCommsCharDB.customMacros then
         BGCommsCharDB.customMacros[name] = nil
         return true
@@ -26,7 +26,7 @@ function Macros:RemoveMacro(name)
 end
 
 -- Get all custom macros
-function Macros:GetMacros()
+function BGCommsMacros:GetMacros()
     if BGCommsCharDB and BGCommsCharDB.customMacros then
         return BGCommsCharDB.customMacros
     end
@@ -34,26 +34,26 @@ function Macros:GetMacros()
 end
 
 -- Execute a custom macro (send its message)
-function Macros:ExecuteMacro(name)
+function BGCommsMacros:ExecuteMacro(name)
     local macros = self:GetMacros()
     local message = macros[name]
 
     if message then
-        Communications:SendMessage(message)
+        BGCommsCommunications:SendMessage(message)
         return true
     end
     return false
 end
 
 -- List all macros (for debugging/admin)
-function Macros:ListMacros()
+function BGCommsMacros:ListMacros()
     local macros = self:GetMacros()
     if not next(macros) then
         print("|cFF00FF00[BGComms]|r No custom macros defined.")
         return
     end
 
-    print("|cFF00FF00[BGComms]|r Custom Macros:")
+    print("|cFF00FF00[BGComms]|r Custom BGCommsMacros:")
     for name, message in pairs(macros) do
         print(string.format("  |cFFFFFF00%s:|r %s", name, message))
     end
