@@ -2,7 +2,7 @@
 -- Note: All modules (Logger, Communications, Locations, UI, Macros, Settings) are loaded
 -- by WoW before this file runs due to the .toc file load order, so they're available globally
 
-local BGComms = {}
+BGComms = {}
 
 -- Log startup (Logger is already loaded globally)
 if Logger then
@@ -185,5 +185,3 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         self:UnregisterEvent("ADDON_LOADED")
     end
 end)
-
-return BGComms

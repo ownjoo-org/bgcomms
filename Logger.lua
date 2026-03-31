@@ -1,6 +1,6 @@
 -- Logger.lua - Comprehensive logging and debugging system
 
-local Logger = {}
+Logger = {}
 
 -- Log levels
 Logger.DEBUG = 1
@@ -131,5 +131,3 @@ function Logger:SetLevel(level)
     self.currentLevel = level
     self:Info("Log level set to: " .. self:GetLevelName(level))
 end
-
-return Logger

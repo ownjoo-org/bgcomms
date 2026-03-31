@@ -1,7 +1,7 @@
 -- Macros.lua - Manage custom battleground communication macros
 -- Note: Communications is loaded globally by WoW before this file
 
-local Macros = {}
+Macros = {}
 
 -- Add a custom macro
 function Macros:AddMacro(name, message)
@@ -58,5 +58,3 @@ function Macros:ListMacros()
         print(string.format("  |cFFFFFF00%s:|r %s", name, message))
     end
 end
-
-return Macros

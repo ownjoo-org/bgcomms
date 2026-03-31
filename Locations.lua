@@ -1,7 +1,7 @@
 -- Locations.lua - Battleground location definitions
 -- Easy to modify: just add new locations to the relevant battleground table
 
-local Locations = {}
+Locations = {}
 
 -- Arathi Basin zones
 Locations.ArathiBasin = {
@@ -140,5 +140,3 @@ function Locations:GetPlayerLocation()
     -- If no zone detected, return generic location
     return "Location"
 end
-
-return Locations

@@ -1,6 +1,6 @@
 -- Communications.lua - Handles sending messages to chat
 
-local Communications = {}
+Communications = {}
 
 -- Chat channel configuration (modify as needed)
 Communications.CHAT_CHANNEL = "PARTY"  -- Options: PARTY, RAID, BATTLEGROUND, BGCOMMS, SAY
@@ -67,5 +67,3 @@ end
 function Communications:GetChatChannel()
     return self.CHAT_CHANNEL
 end
-
-return Communications

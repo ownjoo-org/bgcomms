@@ -1,7 +1,7 @@
 -- UI.lua - Create the button frame and UI elements
 -- Note: Communications, Locations, Macros, Settings are loaded globally by WoW before this file
 
-local UI = {}
+UI = {}
 UI.frame = nil
 UI.macroButtons = {}
 UI.lockButton = nil
@@ -306,5 +306,3 @@ function UI:RefreshUI()
         self:CreateMacroButtons(self.frame, -30)
     end
 end
-
-return UI

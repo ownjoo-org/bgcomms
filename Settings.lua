@@ -1,7 +1,7 @@
 -- Settings.lua - Settings panel UI and management
 -- Note: Communications and UI are loaded globally by WoW before this file
 
-local Settings = {}
+Settings = {}
 Settings.frame = nil
 Settings.channelDropdown = nil
 Settings.opacityValue = nil
@@ -239,5 +239,3 @@ function Settings:Hide()
         self.frame:Hide()
     end
 end
-
-return Settings
