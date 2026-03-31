@@ -1,7 +1,5 @@
 -- Settings.lua - Settings panel UI and management
-
-local Communications = require("Communications")
-local UI = require("UI")
+-- Note: Communications and UI are loaded globally by WoW before this file
 
 local Settings = {}
 Settings.frame = nil

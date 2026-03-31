@@ -1,9 +1,5 @@
 -- UI.lua - Create the button frame and UI elements
-
-local Communications = require("Communications")
-local Locations = require("Locations")
-local Macros = require("Macros")
-local Settings = require("Settings")
+-- Note: Communications, Locations, Macros, Settings are loaded globally by WoW before this file
 
 local UI = {}
 UI.frame = nil

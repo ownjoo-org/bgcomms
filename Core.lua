@@ -1,16 +1,13 @@
 -- Core.lua - Main addon initialization
-
-local Logger = require("Logger")
-local Communications = require("Communications")
-local Locations = require("Locations")
-local UI = require("UI")
-local Macros = require("Macros")
-local Settings = require("Settings")
+-- Note: All modules (Logger, Communications, Locations, UI, Macros, Settings) are loaded
+-- by WoW before this file runs due to the .toc file load order, so they're available globally
 
 local BGComms = {}
 
--- Log startup
-Logger:Debug("BattlegroundComms Core.lua loaded")
+-- Log startup (Logger is already loaded globally)
+if Logger then
+    Logger:Debug("BattlegroundComms Core.lua loaded")
+end
 
 function BGComms:Initialize()
     Logger:Info("=== BattlegroundComms Initialize Started ===")

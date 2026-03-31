@@ -1,6 +1,5 @@
 -- Macros.lua - Manage custom battleground communication macros
-
-local Communications = require("Communications")
+-- Note: Communications is loaded globally by WoW before this file
 
 local Macros = {}
 
