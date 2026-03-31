@@ -3,6 +3,7 @@
 local Communications = require("Communications")
 local Locations = require("Locations")
 local Macros = require("Macros")
+local Settings = require("Settings")
 
 local UI = {}
 UI.frame = nil
@@ -10,6 +11,8 @@ UI.macroButtons = {}
 UI.lockButton = nil
 UI.opacityMinusButton = nil
 UI.opacityPlusButton = nil
+UI.gearButton = nil
+UI.minimapIcon = nil
 
 -- Toggle frame lock
 function UI:ToggleLock()
@@ -60,6 +63,60 @@ end
 function UI:ApplyOpacity(opacity)
     if not self.frame then return end
     self.frame:SetBackdropColor(0, 0, 0, opacity)
+end
+
+-- Create minimap icon
+function UI:CreateMinimapIcon()
+    if self.minimapIcon then return end
+
+    local icon = CreateFrame("Button", "BGCommsMinimapIcon", Minimap)
+    icon:SetSize(36, 36)
+    icon:SetFrameLevel(8)
+
+    -- Restore position or use default (top-right of minimap)
+    local iconX = BGCommsDB and BGCommsDB.minimapIconX or 50
+    local iconY = BGCommsDB and BGCommsDB.minimapIconY or -70
+    icon:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", iconX, iconY)
+
+    -- Icon backdrop
+    icon:SetBackdrop({
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+        tile = true,
+        tileSize = 16,
+        edgeSize = 8,
+        insets = { left = 2, right = 2, top = 2, bottom = 2 }
+    })
+    icon:SetBackdropColor(0.2, 0.2, 0.2, 0.8)
+    icon:SetBackdropBorderColor(1, 1, 1, 0.5)
+
+    -- Icon text
+    local iconText = icon:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    iconText:SetPoint("CENTER", icon, "CENTER", 0, 0)
+    iconText:SetText("⚙")
+
+    -- Make draggable
+    icon:SetMovable(true)
+    icon:EnableMouse(true)
+    icon:RegisterForDrag("LeftButton")
+    icon:SetScript("OnDragStart", function(dragFrame)
+        dragFrame:StartMoving()
+    end)
+    icon:SetScript("OnDragStop", function(dragFrame)
+        dragFrame:StopMovingOrSizing()
+        -- Save minimap icon position
+        if BGCommsDB then
+            BGCommsDB.minimapIconX = dragFrame:GetPoint() and (select(4, dragFrame:GetPoint())) or 50
+            BGCommsDB.minimapIconY = dragFrame:GetPoint() and (select(5, dragFrame:GetPoint())) or -70
+        end
+    end)
+
+    -- Click to toggle settings
+    icon:SetScript("OnClick", function()
+        Settings:ToggleFrame()
+    end)
+
+    self.minimapIcon = icon
 end
 
 -- Create macro buttons dynamically
@@ -143,10 +200,19 @@ function UI:CreateFrame()
     title:SetPoint("TOP", frame, "TOP", 0, -10)
     title:SetText("BG Comms")
 
+    -- Gear/Settings button
+    local gearButton = CreateFrame("Button", "BGGearButton", frame, "GameMenuButtonTemplate")
+    gearButton:SetSize(25, 25)
+    gearButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
+    gearButton:SetText("⚙")
+    gearButton:SetScript("OnClick", function()
+        Settings:ToggleFrame()
+    end)
+
     -- Opacity minus button
     local opacityMinusButton = CreateFrame("Button", "BGOpacityMinusButton", frame, "GameMenuButtonTemplate")
     opacityMinusButton:SetSize(25, 25)
-    opacityMinusButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
+    opacityMinusButton:SetPoint("LEFT", gearButton, "RIGHT", 2, 0)
     opacityMinusButton:SetText("-")
     opacityMinusButton:SetScript("OnClick", function()
         self:AdjustOpacity(-0.1)
@@ -170,6 +236,7 @@ function UI:CreateFrame()
         self:ToggleLock()
     end)
 
+    self.gearButton = gearButton
     self.lockButton = lockButton
     self.opacityMinusButton = opacityMinusButton
     self.opacityPlusButton = opacityPlusButton
@@ -199,6 +266,9 @@ function UI:CreateFrame()
 
     -- Create macro buttons (starting below CLEAR/INC buttons)
     self:CreateMacroButtons(frame, -80)
+
+    -- Create minimap icon
+    self:CreateMinimapIcon()
 
     -- Apply saved lock state
     self:ApplyLockState()

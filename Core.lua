@@ -4,6 +4,7 @@ local Communications = require("Communications")
 local Locations = require("Locations")
 local UI = require("UI")
 local Macros = require("Macros")
+local Settings = require("Settings")
 
 local BGComms = {}
 
@@ -18,14 +19,23 @@ function BGComms:Initialize()
     BGCommsDB.windowY = BGCommsDB.windowY or 200
     BGCommsDB.isLocked = BGCommsDB.isLocked or false
     BGCommsDB.backgroundOpacity = BGCommsDB.backgroundOpacity or 0.5
+    BGCommsDB.useSmartChannelDetection = BGCommsDB.useSmartChannelDetection ~= false  -- Default true
+    BGCommsDB.settingsPanelX = BGCommsDB.settingsPanelX or -100
+    BGCommsDB.settingsPanelY = BGCommsDB.settingsPanelY or 0
+    BGCommsDB.minimapIconX = BGCommsDB.minimapIconX or 0
+    BGCommsDB.minimapIconY = BGCommsDB.minimapIconY or 0
     BGCommsCharDB.customMacros = BGCommsCharDB.customMacros or {}
 
     -- Restore chat channel from SavedVariables
     Communications:SetChatChannel(BGCommsDB.chatChannel)
 
-    -- Create the UI
+    -- Join the BGCOMMS channel for future inter-addon communication
+    JoinChannelByName("BGCOMMS", "", 1, false)
+
+    -- Create the UI and Settings panels
     UI:CreateFrame()
     UI:Show()
+    Settings:CreateFrame()
 
     -- Register slash commands
     SLASH_BGCOMMS1 = "/bgcomms"
@@ -44,16 +54,59 @@ function BGComms:HandleSlashCommand(msg)
         UI:Hide()
     elseif msg == "show" then
         UI:Show()
+    elseif msg == "settings" then
+        Settings:ToggleFrame()
     elseif msg == "clear" then
         Communications:SendClear()
     elseif string.sub(msg, 1, 3) == "inc" then
         local location = string.sub(msg, 5)  -- Everything after "inc "
         Communications:SendIncoming(location)
+    elseif string.sub(msg, 1, 7) == "channel" then
+        self:HandleChannelCommand(string.sub(msg, 9))  -- Everything after "channel "
     elseif string.sub(msg, 1, 5) == "macro" then
         self:HandleMacroCommand(string.sub(msg, 7))  -- Everything after "macro "
+    elseif string.sub(msg, 1, 12) == "smartchannel" then
+        self:HandleSmartChannelCommand(string.sub(msg, 14))  -- Everything after "smartchannel "
     else
         print("|cFF00FF00[BGComms]|r Unknown command: " .. msg)
-        print("|cFF00FF00[BGComms]|r Usage: /bgc [show|hide|clear|inc <location>|macro <add|remove|list> ...]")
+        print("|cFF00FF00[BGComms]|r Usage: /bgc [show|hide|settings|clear|inc <location>|channel <name>|macro ...|smartchannel on|off]")
+    end
+end
+
+function BGComms:HandleChannelCommand(msg)
+    local channel = msg:upper():match("%S+")
+
+    if not channel or channel == "" then
+        print("|cFF00FF00[BGComms]|r Current channel: " .. Communications:GetChatChannel())
+        print("|cFF00FF00[BGComms]|r Usage: /bgc channel <PARTY|RAID|BATTLEGROUND|BGCOMMS|SAY>")
+        return
+    end
+
+    -- Validate channel
+    if channel ~= "PARTY" and channel ~= "RAID" and channel ~= "BATTLEGROUND" and channel ~= "BGCOMMS" and channel ~= "SAY" then
+        print("|cFF00FF00[BGComms]|r Invalid channel: " .. channel)
+        print("|cFF00FF00[BGComms]|r Valid channels: PARTY, RAID, BATTLEGROUND, BGCOMMS, SAY")
+        return
+    end
+
+    Communications:SetChatChannel(channel)
+    Settings:UpdateChannelDropdown()
+    print("|cFF00FF00[BGComms]|r Channel changed to: " .. channel)
+end
+
+function BGComms:HandleSmartChannelCommand(msg)
+    local command = msg:lower():match("%S+")
+
+    if command == "on" then
+        BGCommsDB.useSmartChannelDetection = true
+        print("|cFF00FF00[BGComms]|r Smart channel detection: ON")
+    elseif command == "off" then
+        BGCommsDB.useSmartChannelDetection = false
+        print("|cFF00FF00[BGComms]|r Smart channel detection: OFF")
+    else
+        local status = BGCommsDB.useSmartChannelDetection and "ON" or "OFF"
+        print("|cFF00FF00[BGComms]|r Smart channel detection: " .. status)
+        print("|cFF00FF00[BGComms]|r Usage: /bgc smartchannel <on|off>")
     end
 end
 

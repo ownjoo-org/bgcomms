@@ -3,7 +3,34 @@
 local Communications = {}
 
 -- Chat channel configuration (modify as needed)
-Communications.CHAT_CHANNEL = "PARTY"  -- Options: PARTY, RAID, BATTLEGROUND, SAY
+Communications.CHAT_CHANNEL = "PARTY"  -- Options: PARTY, RAID, BATTLEGROUND, BGCOMMS, SAY
+Communications.BGCOMMS_CHANNEL = "BGCOMMS"  -- Custom channel for inter-addon communication
+
+-- Determine the best channel to use based on current situation
+function Communications:GetSmartChannel()
+    -- If smart detection is disabled, use configured channel
+    if BGCommsDB and not BGCommsDB.useSmartChannelDetection then
+        return self.CHAT_CHANNEL
+    end
+
+    -- Check if player is in battleground
+    if IsInBattleground() then
+        return self.BGCOMMS_CHANNEL
+    end
+
+    -- Check for raid group
+    if IsInRaid() then
+        return "RAID"
+    end
+
+    -- Check for party group
+    if IsInGroup() then
+        return "PARTY"
+    end
+
+    -- Solo - use party as default
+    return "PARTY"
+end
 
 function Communications:SendClear()
     self:SendMessage("CLEAR")
@@ -20,7 +47,8 @@ end
 function Communications:SendMessage(message)
     if not message then return end
 
-    local channel = self.CHAT_CHANNEL
+    -- Use smart channel detection if enabled
+    local channel = self:GetSmartChannel()
     local fullMessage = string.format("[BGComms] %s", message)
 
     SendChatMessage(fullMessage, channel)
