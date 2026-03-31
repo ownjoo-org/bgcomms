@@ -2,9 +2,12 @@
 ## Title: Battleground Comms
 ## Notes: Simple battleground communication addon with inter-addon channel support
 ## Author: You
-## Version: 0.2.0
+## Version: 0.3.0
 ## SavedVariables: BGCommsDB
 ## SavedVariablesPerCharacter: BGCommsCharDB
+
+# Utility modules (load first)
+Logger.lua
 
 # Core files
 Core.lua

@@ -1,5 +1,6 @@
 -- Core.lua - Main addon initialization
 
+local Logger = require("Logger")
 local Communications = require("Communications")
 local Locations = require("Locations")
 local UI = require("UI")
@@ -8,10 +9,16 @@ local Settings = require("Settings")
 
 local BGComms = {}
 
+-- Log startup
+Logger:Debug("BattlegroundComms Core.lua loaded")
+
 function BGComms:Initialize()
+    Logger:Info("=== BattlegroundComms Initialize Started ===")
+
     -- Initialize SavedVariables
     BGCommsDB = BGCommsDB or {}
     BGCommsCharDB = BGCommsCharDB or {}
+    Logger:Debug("SavedVariables initialized")
 
     -- Initialize SavedVariables defaults
     BGCommsDB.chatChannel = BGCommsDB.chatChannel or "PARTY"
@@ -25,17 +32,26 @@ function BGComms:Initialize()
     BGCommsDB.minimapIconX = BGCommsDB.minimapIconX or 0
     BGCommsDB.minimapIconY = BGCommsDB.minimapIconY or 0
     BGCommsCharDB.customMacros = BGCommsCharDB.customMacros or {}
+    Logger:Debug("SavedVariables defaults set")
 
     -- Restore chat channel from SavedVariables
+    Logger:Debug("Restoring chat channel: " .. BGCommsDB.chatChannel)
     Communications:SetChatChannel(BGCommsDB.chatChannel)
 
     -- Join the BGCOMMS channel for future inter-addon communication
+    Logger:Debug("Joining BGCOMMS channel...")
     JoinChannelByName("BGCOMMS", "", 1, false)
+    Logger:Debug("BGCOMMS channel join initiated")
 
     -- Create the UI and Settings panels
+    Logger:Debug("Creating UI frame...")
     UI:CreateFrame()
     UI:Show()
+    Logger:Debug("UI frame created and shown")
+
+    Logger:Debug("Creating Settings frame...")
     Settings:CreateFrame()
+    Logger:Debug("Settings frame created")
 
     -- Register slash commands
     SLASH_BGCOMMS1 = "/bgcomms"
@@ -43,7 +59,10 @@ function BGComms:Initialize()
     SlashCmdList["BGCOMMS"] = function(msg)
         self:HandleSlashCommand(msg)
     end
+    Logger:Debug("Slash commands registered")
 
+    Logger:Info("=== BattlegroundComms Initialize Complete ===")
+    Logger:Info("Addon loaded! Use /bgc to toggle the window.")
     print("|cFF00FF00[BGComms]|r Addon loaded! Use /bgc to toggle the window.")
 end
 
@@ -58,6 +77,8 @@ function BGComms:HandleSlashCommand(msg)
         Settings:ToggleFrame()
     elseif msg == "clear" then
         Communications:SendClear()
+    elseif msg == "debug" then
+        Logger:PrintHistory()
     elseif string.sub(msg, 1, 3) == "inc" then
         local location = string.sub(msg, 5)  -- Everything after "inc "
         Communications:SendIncoming(location)
@@ -69,7 +90,7 @@ function BGComms:HandleSlashCommand(msg)
         self:HandleSmartChannelCommand(string.sub(msg, 14))  -- Everything after "smartchannel "
     else
         print("|cFF00FF00[BGComms]|r Unknown command: " .. msg)
-        print("|cFF00FF00[BGComms]|r Usage: /bgc [show|hide|settings|clear|inc <location>|channel <name>|macro ...|smartchannel on|off]")
+        print("|cFF00FF00[BGComms]|r Usage: /bgc [show|hide|settings|clear|inc <location>|channel <name>|macro ...|smartchannel on|off|debug]")
     end
 end
 
@@ -153,7 +174,17 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:SetScript("OnEvent", function(self, event, addonName)
     if addonName == "BattlegroundComms" then
-        BGComms:Initialize()
+        Logger:Info("ADDON_LOADED event triggered for BattlegroundComms")
+        local success, errorMsg = pcall(function()
+            BGComms:Initialize()
+        end)
+
+        if not success then
+            Logger:Error("Failed to initialize addon: " .. tostring(errorMsg))
+        else
+            Logger:Info("Addon initialization successful!")
+        end
+
         self:UnregisterEvent("ADDON_LOADED")
     end
 end)
