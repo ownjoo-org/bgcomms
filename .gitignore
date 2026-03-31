@@ -1,0 +1,18 @@
+# Lua testing
+node_modules/
+.busted
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# WoW addon specific
+*.toc.bak

@@ -1,0 +1,14 @@
+## Interface: 110005
+## Title: Battleground Comms
+## Notes: Simple battleground communication addon
+## Author: You
+## Version: 0.1.0
+## SavedVariables: BGCommsDB
+## SavedVariablesPerCharacter: BGCommsCharDB
+
+# Core files
+Core.lua
+Locations.lua
+Communications.lua
+UI.lua
+Macros.lua
