@@ -65,21 +65,23 @@ function BGCommsCommunications:SendIncoming(location)
         prefix = "{circle}{circle} "
     elseif count == "5+" then
         prefix = "{cross}{cross} "
+    elseif count == "0" then
+        prefix = "{square}{square} "
     end
 
     local message
     if count == "0" then
-        -- No count or prefix for priority 0
+        -- Priority 0 with square icons
         if not location or location == "" then
-            message = "INC"
+            message = prefix .. "INC"
         else
-            message = "INC " .. location
+            message = prefix .. "INC: " .. location
         end
     else
         if not location or location == "" then
-            message = prefix .. "INC " .. count .. ":"
+            message = prefix .. "INC: " .. count
         else
-            message = prefix .. "INC " .. count .. ": " .. location
+            message = prefix .. "INC: " .. count .. " " .. location
         end
     end
 

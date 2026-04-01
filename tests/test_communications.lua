@@ -106,6 +106,17 @@ describe("Communications", function()
             Communications:SendIncoming("East")
             assert.is_true(string.find(sent_messages[1].message, "{cross}") ~= nil)
         end)
+
+        it("should add square icons for priority 0", function()
+            _G.BGCommsUI.currentPriority = "0"
+            Communications:SendIncoming("West")
+            assert.is_true(string.find(sent_messages[1].message, "{square}") ~= nil)
+        end)
+
+        it("should have colon between INC and location when location provided", function()
+            Communications:SendIncoming("Stables")
+            assert.is_true(string.find(sent_messages[1].message, "INC:") ~= nil)
+        end)
     end)
 
     describe("GetSmartChannel", function()
