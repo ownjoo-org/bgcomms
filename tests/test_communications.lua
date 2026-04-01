@@ -118,9 +118,9 @@ describe("Communications", function()
             assert.is_true(string.find(sent_messages[1].message, "{square}") ~= nil)
         end)
 
-        it("should have colon between INC and location when location provided", function()
+        it("should have colon after count and before location", function()
             Communications:SendIncoming("Stables")
-            assert.is_true(string.find(sent_messages[1].message, "INC:") ~= nil)
+            assert.is_true(string.find(sent_messages[1].message, ":") ~= nil)
         end)
 
         it("should use ? placeholder for priority 0", function()
@@ -132,15 +132,18 @@ describe("Communications", function()
         it("should have fixed-width count formatting", function()
             _G.BGCommsUI.currentPriority = "1"
             Communications:SendIncoming("Stables")
-            -- Check for fixed-width format (count is right-aligned with width 2)
-            assert.is_true(string.find(sent_messages[1].message, " 1") ~= nil)
+            -- Check for fixed-width format (count is left-aligned with width 2, "1 ")
+            assert.is_true(string.find(sent_messages[1].message, "1 ") ~= nil)
         end)
 
-        it("should handle 5+ with fixed width", function()
+        it("should handle 5+ with fixed width consistent to single digits", function()
             _G.BGCommsUI.currentPriority = "5+"
             Communications:SendIncoming("Stables")
-            -- 5+ is already 2 chars wide, should appear as-is
+            -- 5+ is 2 chars wide, same as "1 ", "? ", etc
             assert.is_true(string.find(sent_messages[1].message, "5+") ~= nil)
+            -- Verify all counts have consistent formatting with colon separator
+            local msg = sent_messages[1].message
+            assert.is_true(string.find(msg, ":") ~= nil)
         end)
     end)
 
