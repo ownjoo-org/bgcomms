@@ -128,16 +128,30 @@ end
 
 -- Get the player's current location
 function BGCommsLocations:GetPlayerLocation()
-    -- Try to get sub-zone (more specific location)
-    local subZone = GetSubZoneText()
-    if subZone and subZone ~= "" then
-        return subZone
+    -- WoW 12.0+ uses C_Map for zone information
+    if C_Map and C_Map.GetBestMapID then
+        local mapID = C_Map.GetBestMapID()
+        if mapID then
+            local mapInfo = C_Map.GetMapInfo(mapID)
+            if mapInfo and mapInfo.name then
+                return mapInfo.name
+            end
+        end
     end
 
-    -- Fall back to main zone
-    local zone = GetRealZoneText()
-    if zone and zone ~= "" then
-        return zone
+    -- Fallback to legacy API if available
+    if GetSubZoneText then
+        local subZone = GetSubZoneText()
+        if subZone and subZone ~= "" then
+            return subZone
+        end
+    end
+
+    if GetRealZoneText then
+        local zone = GetRealZoneText()
+        if zone and zone ~= "" then
+            return zone
+        end
     end
 
     -- If no zone detected, return generic location
