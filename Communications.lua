@@ -41,39 +41,23 @@ function BGCommsCommunications:GetSmartChannel()
 end
 
 function BGCommsCommunications:SendClear()
-    -- Format: Green colored CLEAR
-    local message = "|cFF00FF00CLEAR|r"
+    -- Format: CLEAR message
+    local message = "CLEAR"
     self:SendMessage(message)
 end
 
 function BGCommsCommunications:SendIncoming(location)
-    -- Get count/priority and format with colors
+    -- Get count/priority
     local count = "0"
-    local color = ""
 
     if BGCommsUI and BGCommsUI.currentPriority then
         count = BGCommsUI.currentPriority
-
-        -- Determine color based on count (skip if "0")
-        if count == "0" then
-            -- No color or count prefix
-            color = ""
-        elseif count == "1" or count == "2" then
-            -- Yellow for 1-2
-            color = "|cFFFFFF00"
-        elseif count == "3" or count == "4" then
-            -- Orange for 3-4
-            color = "|cFFFF8800"
-        elseif count == "5+" then
-            -- Red for 5+
-            color = "|cFFFF0000"
-        end
     end
 
-    -- Format message with color and count
+    -- Format message (plain text, no color codes)
     local message
     if count == "0" then
-        -- No count included
+        -- No count included for priority 0
         if not location or location == "" then
             message = "INC"
         else
@@ -81,9 +65,9 @@ function BGCommsCommunications:SendIncoming(location)
         end
     else
         if not location or location == "" then
-            message = color .. "INC " .. count .. "|r"
+            message = "INC " .. count
         else
-            message = color .. "INC " .. count .. "|r " .. location
+            message = "INC " .. count .. " " .. location
         end
     end
 
