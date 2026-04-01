@@ -102,7 +102,7 @@ function BGComms:PrintHelp()
     print("|cFFFFFF00/bgc show|r - Show main window")
     print("|cFFFFFF00/bgc hide|r - Hide main window")
     print("|cFFFFFF00/bgc settings|r - Open settings panel")
-    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (PARTY/RAID/BATTLEGROUND/BGCOMMS/SAY)")
+    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (SAY/YELL/PARTY/RAID/INSTANCE_CHAT/GUILD)")
     print("|cFFFFFF00/bgc inc <location>|r - Send incoming message")
     print("|cFFFFFF00/bgc clear|r - Send clear message")
     print("|cFFFFFF00/bgc smartchannel on|off|r - Toggle smart channel detection")
@@ -119,14 +119,14 @@ function BGComms:HandleChannelCommand(msg)
 
     if not channel or channel == "" then
         print("|cFF00FF00Current channel: " .. BGCommsCommunications:GetChatChannel())
-        print("|cFF00FF00Usage: /bgc channel <PARTY|RAID|BATTLEGROUND|BGCOMMS|SAY>")
+        print("|cFF00FF00Usage: /bgc channel <SAY|YELL|PARTY|RAID|INSTANCE_CHAT|GUILD>")
         return
     end
 
     -- Validate channel
-    if channel ~= "PARTY" and channel ~= "RAID" and channel ~= "BATTLEGROUND" and channel ~= "BGCOMMS" and channel ~= "SAY" then
+    if channel ~= "SAY" and channel ~= "YELL" and channel ~= "PARTY" and channel ~= "RAID" and channel ~= "INSTANCE_CHAT" and channel ~= "GUILD" then
         print("|cFF00FF00Invalid channel: " .. channel)
-        print("|cFF00FF00Valid channels: PARTY, RAID, BATTLEGROUND, BGCOMMS, SAY")
+        print("|cFF00FF00Valid channels: SAY, YELL, PARTY, RAID, INSTANCE_CHAT, GUILD")
         return
     end
 

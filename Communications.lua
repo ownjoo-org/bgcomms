@@ -3,8 +3,8 @@
 BGCommsCommunications = {}
 
 -- Chat channel configuration (modify as needed)
-BGCommsCommunications.CHAT_CHANNEL = "PARTY"  -- Options: PARTY, RAID, BATTLEGROUND, BGCOMMS, SAY
-BGCommsCommunications.BGCOMMS_CHANNEL = "BGCOMMS"  -- Custom channel for inter-addon communication
+-- Valid channels: SAY, YELL, PARTY, RAID, INSTANCE_CHAT (battleground), GUILD
+BGCommsCommunications.CHAT_CHANNEL = "PARTY"
 
 -- Determine the best channel to use based on current situation
 function BGCommsCommunications:GetSmartChannel()
@@ -20,7 +20,7 @@ function BGCommsCommunications:GetSmartChannel()
     end
 
     if inBattleground then
-        return self.BGCOMMS_CHANNEL
+        return "INSTANCE_CHAT"  -- Battleground/instance chat
     end
 
     -- Check for raid group
