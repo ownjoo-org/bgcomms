@@ -20,7 +20,17 @@ describe("Locations", function()
         }
 
         _G.BGCommsLogger = {
+            DEBUG = 1,
+            INFO = 2,
+            WARNING = 3,
+            ERROR = 4,
+            CRITICAL = 5,
+            currentLevel = 3,
             Debug = function() end,
+            Info = function() end,
+            Warning = function() end,
+            Error = function() end,
+            Critical = function() end,
         }
     end)
 

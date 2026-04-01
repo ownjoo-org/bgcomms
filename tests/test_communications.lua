@@ -14,10 +14,22 @@ describe("Communications", function()
             return true
         end
 
-        -- Mock logger
+        -- Mock logger with all methods
         _G.BGCommsLogger = {
+            DEBUG = 1,
+            INFO = 2,
+            WARNING = 3,
+            ERROR = 4,
+            CRITICAL = 5,
+            currentLevel = 3,
             Debug = function() end,
+            Info = function() end,
+            Warning = function() end,
             Error = function() end,
+            Critical = function() end,
+            SetLogLevel = function() end,
+            GetLogLevelName = function() return "WARNING" end,
+            ParseLogLevel = function() return 3 end,
         }
 
         -- Mock BGCommsUI for priority
