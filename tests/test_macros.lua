@@ -19,8 +19,16 @@ describe("Macros", function()
 
         -- Mock logger
         _G.BGCommsLogger = {
+            DEBUG = 10,
+            INFO = 20,
+            WARNING = 30,
+            ERROR = 40,
+            CRITICAL = 50,
             Debug = function() end,
             Info = function() end,
+            Warning = function() end,
+            Error = function() end,
+            Critical = function() end,
         }
 
         -- Mock Communications module

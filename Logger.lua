@@ -1,24 +1,26 @@
 -- BGCommsLogger.lua - Logging system with configurable log levels
+-- Uses numeric constants like Python's logging module
 
 BGCommsLogger = {}
 
--- Log levels (higher number = more severe, only output at or above current level)
-BGCommsLogger.DEBUG = 1
-BGCommsLogger.INFO = 2
-BGCommsLogger.WARNING = 3
-BGCommsLogger.ERROR = 4
-BGCommsLogger.CRITICAL = 5
+-- Log level constants (higher number = more severe)
+-- Only log messages where: message_level >= current_loglevel
+BGCommsLogger.DEBUG = 10
+BGCommsLogger.INFO = 20
+BGCommsLogger.WARNING = 30
+BGCommsLogger.ERROR = 40
+BGCommsLogger.CRITICAL = 50
 
 -- Current log level (default to WARNING - only show warnings and above during gameplay)
 BGCommsLogger.currentLevel = BGCommsLogger.WARNING
 
 -- Colors for chat output
 BGCommsLogger.colors = {
-    DEBUG = "|cFF808080",    -- Gray
-    INFO = "|cFF00FF00",     -- Green
-    WARNING = "|cFFFFFF00",  -- Yellow
-    ERROR = "|cFFFF0000",    -- Red
-    CRITICAL = "|cFFFF00FF", -- Magenta
+    [BGCommsLogger.DEBUG] = "|cFF808080",    -- Gray
+    [BGCommsLogger.INFO] = "|cFF00FF00",     -- Green
+    [BGCommsLogger.WARNING] = "|cFFFFFF00",  -- Yellow
+    [BGCommsLogger.ERROR] = "|cFFFF0000",    -- Red
+    [BGCommsLogger.CRITICAL] = "|cFFFF00FF", -- Magenta
     RESET = "|r",
 }
 
@@ -39,17 +41,16 @@ end
 
 -- Get color for level
 function BGCommsLogger:GetColor(level)
-    if level == self.DEBUG then return self.colors.DEBUG
-    elseif level == self.INFO then return self.colors.INFO
-    elseif level == self.WARNING then return self.colors.WARNING
-    elseif level == self.ERROR then return self.colors.ERROR
-    elseif level == self.CRITICAL then return self.colors.CRITICAL
-    else return self.colors.RESET
-    end
+    return self.colors[level] or self.colors.RESET
 end
 
 -- Internal log function - always called, filtering happens here
 function BGCommsLogger:_Log(level, message)
+    -- Only output to chat/console if message level >= current threshold
+    if level < self.currentLevel then
+        return
+    end
+
     local levelName = self:GetLevelName(level)
     local color = self:GetColor(level)
     local timestamp = date("%H:%M:%S")
@@ -71,13 +72,11 @@ function BGCommsLogger:_Log(level, message)
         table.remove(self.history, 1)
     end
 
-    -- Only output to chat/console if level meets threshold
-    if level >= self.currentLevel then
-        if DEFAULT_CHAT_FRAME then
-            DEFAULT_CHAT_FRAME:AddMessage(formattedMsg)
-        end
-        print(formattedMsg)
+    -- Output to chat/console
+    if DEFAULT_CHAT_FRAME then
+        DEFAULT_CHAT_FRAME:AddMessage(formattedMsg)
     end
+    print(formattedMsg)
 
     -- If DEBUG level, also save to SavedVariables for file export
     if self.currentLevel == self.DEBUG then

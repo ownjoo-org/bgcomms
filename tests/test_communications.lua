@@ -16,12 +16,12 @@ describe("Communications", function()
 
         -- Mock logger with all methods
         _G.BGCommsLogger = {
-            DEBUG = 1,
-            INFO = 2,
-            WARNING = 3,
-            ERROR = 4,
-            CRITICAL = 5,
-            currentLevel = 3,
+            DEBUG = 10,
+            INFO = 20,
+            WARNING = 30,
+            ERROR = 40,
+            CRITICAL = 50,
+            currentLevel = 30,
             history = {},
             Debug = function(self, msg) table.insert(self.history, msg) end,
             Info = function(self, msg) table.insert(self.history, msg) end,
@@ -30,7 +30,7 @@ describe("Communications", function()
             Critical = function(self, msg) table.insert(self.history, msg) end,
             SetLogLevel = function(self, level) self.currentLevel = level end,
             GetLogLevelName = function(self) return "WARNING" end,
-            ParseLogLevel = function(self, str) return 3 end,
+            ParseLogLevel = function(self, str) return 30 end,
         }
 
         -- Mock BGCommsUI for priority
