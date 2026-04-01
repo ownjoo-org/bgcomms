@@ -89,9 +89,23 @@ function BGCommsCommunications:SendMessage(message)
     -- Use smart channel detection if enabled
     local channel = self:GetSmartChannel()
 
-    -- WoW 12.0 uses C_ChatInfo.SendChatMessage(message, chatType)
-    if C_ChatInfo and C_ChatInfo.SendChatMessage then
-        C_ChatInfo.SendChatMessage(message, channel)
+    -- Map channel names to Blizzard chat type constants
+    local chatTypeMap = {
+        ["SAY"] = Enum.ChatType.Say,
+        ["YELL"] = Enum.ChatType.Yell,
+        ["PARTY"] = Enum.ChatType.Party,
+        ["RAID"] = Enum.ChatType.Raid,
+        ["INSTANCE"] = Enum.ChatType.InstanceChat,
+        ["GUILD"] = Enum.ChatType.Guild,
+    }
+
+    local chatType = chatTypeMap[channel]
+
+    if chatType and C_ChatInfo and C_ChatInfo.SendChatMessage then
+        C_ChatInfo.SendChatMessage({
+            text = message,
+            chatType = chatType
+        })
     end
 end
 
