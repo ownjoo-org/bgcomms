@@ -92,10 +92,7 @@ function BGCommsCommunications:SendMessage(message)
 
     -- WoW 12.0+ requires C_ChatInfo.SendChatMessage (SendChatMessage is now protected)
     if C_ChatInfo and C_ChatInfo.SendChatMessage then
-        C_ChatInfo.SendChatMessage({
-            message = fullMessage,
-            type = channel
-        })
+        C_ChatInfo.SendChatMessage(fullMessage, channel)
     end
 end
 
