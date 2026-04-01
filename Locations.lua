@@ -128,13 +128,17 @@ end
 
 -- Get the player's current location
 function BGCommsLocations:GetPlayerLocation()
+    local location = nil
+
     -- WoW 12.0+ uses C_Map for zone information
     if C_Map and C_Map.GetBestMapID then
         local mapID = C_Map.GetBestMapID()
         if mapID then
             local mapInfo = C_Map.GetMapInfo(mapID)
             if mapInfo and mapInfo.name then
-                return mapInfo.name
+                location = mapInfo.name
+                BGCommsLogger:Debug("GetPlayerLocation: C_Map returned '" .. tostring(location) .. "'")
+                return location
             end
         end
     end
@@ -143,6 +147,7 @@ function BGCommsLocations:GetPlayerLocation()
     if GetSubZoneText then
         local subZone = GetSubZoneText()
         if subZone and subZone ~= "" then
+            BGCommsLogger:Debug("GetPlayerLocation: GetSubZoneText returned '" .. subZone .. "'")
             return subZone
         end
     end
@@ -150,10 +155,12 @@ function BGCommsLocations:GetPlayerLocation()
     if GetRealZoneText then
         local zone = GetRealZoneText()
         if zone and zone ~= "" then
+            BGCommsLogger:Debug("GetPlayerLocation: GetRealZoneText returned '" .. zone .. "'")
             return zone
         end
     end
 
     -- If no zone detected, return generic location
+    BGCommsLogger:Debug("GetPlayerLocation: No location detected")
     return "Location"
 end
