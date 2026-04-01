@@ -139,10 +139,10 @@ function BGCommsUI:CreateMinimapIcon()
     end)
 
     -- Click handler: left click toggles main frame, right click opens settings
-    button:SetScript("OnClick", function(self, button)
-        if button == "LeftButton" then
+    button:SetScript("OnClick", function(self, clickButton)
+        if clickButton == "LeftButton" then
             BGCommsUI:ToggleFrame()
-        elseif button == "RightButton" then
+        elseif clickButton == "RightButton" then
             BGCommsSettingsPanel:ToggleFrame()
         end
     end)

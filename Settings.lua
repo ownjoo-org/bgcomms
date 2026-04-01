@@ -36,17 +36,11 @@ function BGCommsSettingsPanel:CreateFrame()
     end
     frame:SetPoint("CENTER", UIParent, "CENTER", posX, posY)
 
-    -- SetBackdrop calls are deprecated in WoW Midnight 12.0 and removed
-    -- frame:SetBackdrop({
-    --     bgFile = "Interface/Tooltips/BGCommsUI-Tooltip-Background",
-    --     edgeFile = "Interface/Tooltips/BGCommsUI-Tooltip-Border",
-    --     tile = true,
-    --     tileSize = 16,
-    --     edgeSize = 16,
-    --     insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    -- })
-    -- frame:SetBackdropColor(0, 0, 0, 0.7)
-    -- frame:SetBackdropBorderColor(1, 1, 1, 0.8)
+    -- Create background texture with 70% opacity
+    local bgTexture = frame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetAllPoints(frame)
+    bgTexture:SetColorTexture(0, 0, 0, 0.7)
+
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
@@ -79,17 +73,61 @@ function BGCommsSettingsPanel:CreateFrame()
         self:Hide()
     end)
 
-    -- Opacity label (moved up since channel dropdown is now in primary frame)
+    -- Opacity label
     local opacityLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     opacityLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -40)
     opacityLabel:SetText("Opacity:")
 
+    -- Declare opacity controls as local variables
+    local opacitySlider, opacityValue, opacityInput
+
+    -- Helper function to update opacity
+    local function updateOpacity(value)
+        value = math.floor(value)
+        if value < 0 then value = 0 elseif value > 100 then value = 100 end
+        local opacity = value / 100
+
+        if BGCommsDB then
+            BGCommsDB.backgroundOpacity = opacity
+        end
+
+        -- Update slider and input field
+        opacitySlider:SetValue(value)
+        opacityInput:SetText(tostring(value))
+        opacityValue:SetText(value .. "%")
+
+        -- Apply opacity to main frame background
+        if BGCommsUI and BGCommsUI.backgroundTexture then
+            if value == 0 then
+                BGCommsUI.backgroundTexture:SetAlpha(0)
+                if BGCommsUI.frame then
+                    BGCommsUI.frame:EnableMouse(false)
+                end
+            else
+                BGCommsUI.backgroundTexture:SetAlpha(opacity)
+                if BGCommsUI.frame then
+                    BGCommsUI.frame:EnableMouse(true)
+                end
+            end
+        end
+    end
+
+    -- Minus button
+    local minusButton = CreateFrame("Button", "BGSettingsOpacityMinus", frame, "GameMenuButtonTemplate")
+    minusButton:SetSize(25, 22)
+    minusButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -60)
+    minusButton:SetText("-")
+    minusButton:SetScript("OnClick", function()
+        local currentValue = math.floor(opacitySlider:GetValue())
+        updateOpacity(currentValue - 1)
+    end)
+
     -- Opacity slider (0-100%)
     local opacitySlider = CreateFrame("Slider", "BGSettingsOpacitySlider", frame)
-    opacitySlider:SetSize(150, 15)
-    opacitySlider:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -120)
+    opacitySlider:SetSize(100, 15)
+    opacitySlider:SetPoint("LEFT", minusButton, "RIGHT", 3, 0)
     opacitySlider:SetMinMaxValues(0, 100)
-    opacitySlider:SetValue(50)  -- Default to 50%
+    opacitySlider:SetValue(50)
     opacitySlider:SetValueStep(1)
     opacitySlider:SetOrientation("HORIZONTAL")
 
@@ -105,42 +143,55 @@ function BGCommsSettingsPanel:CreateFrame()
         thumb:SetSize(16, 16)
     end
 
+    -- Plus button
+    local plusButton = CreateFrame("Button", "BGSettingsOpacityPlus", frame, "GameMenuButtonTemplate")
+    plusButton:SetSize(25, 22)
+    plusButton:SetPoint("LEFT", opacitySlider, "RIGHT", 3, 0)
+    plusButton:SetText("+")
+    plusButton:SetScript("OnClick", function()
+        local currentValue = math.floor(opacitySlider:GetValue())
+        updateOpacity(currentValue + 1)
+    end)
+
     -- Opacity value display
     local opacityValue = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    opacityValue:SetPoint("LEFT", opacitySlider, "RIGHT", 10, 0)
+    opacityValue:SetPoint("LEFT", plusButton, "RIGHT", 10, 0)
     opacityValue:SetText("50%")
     opacityValue:SetWidth(50)
-    self.opacityValue = opacityValue
+
+    -- Opacity input field
+    local opacityInput = CreateFrame("EditBox", "BGSettingsOpacityInput", frame)
+    opacityInput:SetAutoFocus(false)
+    opacityInput:SetSize(50, 22)
+    opacityInput:SetPoint("LEFT", opacityValue, "RIGHT", 10, 0)
+    opacityInput:SetFont("Fonts/FRIZQT__.TTF", 12)
+    opacityInput:SetBackdrop({
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
+        tile = true,
+        tileSize = 16,
+        edgeSize = 16,
+        insets = { left = 4, right = 4, top = 4, bottom = 4 }
+    })
+    opacityInput:SetBackdropColor(0, 0, 0, 0.5)
+    opacityInput:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+    opacityInput:SetText("50")
+    opacityInput:SetScript("OnEnterPressed", function(self)
+        local value = tonumber(self:GetText()) or 50
+        updateOpacity(value)
+        self:ClearFocus()
+    end)
+    opacityInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+
     self.opacitySlider = opacitySlider
+    self.opacityValue = opacityValue
+    self.opacityInput = opacityInput
 
     -- Slider value change handler
     opacitySlider:SetScript("OnValueChanged", function(self, value)
-        value = math.floor(value)
-        local opacity = value / 100
-
-        if BGCommsDB then
-            BGCommsDB.backgroundOpacity = opacity
-        end
-
-        -- Update display
-        opacityValue:SetText(value .. "%")
-
-        -- Apply opacity to main frame background
-        if BGCommsUI and BGCommsUI.backgroundTexture then
-            if value == 0 then
-                -- At 0, make background invisible and non-clickable
-                BGCommsUI.backgroundTexture:SetAlpha(0)
-                if BGCommsUI.frame then
-                    BGCommsUI.frame:EnableMouse(false)
-                end
-            else
-                -- At any positive value, enable clicking and set opacity
-                BGCommsUI.backgroundTexture:SetAlpha(opacity)
-                if BGCommsUI.frame then
-                    BGCommsUI.frame:EnableMouse(true)
-                end
-            end
-        end
+        updateOpacity(value)
     end)
 
     -- Lock toggle label
@@ -229,6 +280,10 @@ function BGCommsSettingsPanel:UpdateOpacityDisplay()
     if self.opacityValue then
         local opacity = BGCommsDB and BGCommsDB.backgroundOpacity or 0.5
         self.opacityValue:SetText(math.floor(opacity * 100) .. "%")
+    end
+    if self.opacityInput then
+        local opacity = BGCommsDB and BGCommsDB.backgroundOpacity or 0.5
+        self.opacityInput:SetText(tostring(math.floor(opacity * 100)))
     end
 end
 
