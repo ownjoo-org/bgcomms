@@ -462,6 +462,43 @@ function BGCommsUI:CreateFrame()
     self.clearButton = clearButton
     self.incButton = incButton
 
+    -- Gear button for settings (top-right of frame, above priority buttons)
+    local gearButton = CreateFrame("Button", "BGGearButton", frame)
+    gearButton:SetSize(25, 25)
+    gearButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -10, -8)
+
+    -- Create gear icon background
+    local gearBg = gearButton:CreateTexture(nil, "BACKGROUND")
+    gearBg:SetAllPoints(gearButton)
+    gearBg:SetColorTexture(0.3, 0.3, 0.3, 1)  -- Dark gray background
+
+    -- Create gear icon text (⚙ or simplified gear symbol)
+    local gearText = gearButton:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    gearText:SetAllPoints(gearButton)
+    gearText:SetText("⚙")
+    gearText:SetJustifyH("CENTER")
+    gearText:SetJustifyV("MIDDLE")
+    gearText:SetTextColor(1, 1, 1)  -- White text
+
+    gearButton:EnableMouse(true)
+    gearButton:SetScript("OnClick", function()
+        BGCommsSettingsPanel:ToggleFrame()
+    end)
+
+    -- Tooltip for gear button
+    gearButton:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+        GameTooltip:SetText("Settings", 1, 1, 1)
+        GameTooltip:Show()
+    end)
+
+    gearButton:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+
+    self.gearButton = gearButton
+    BGCommsLogger:Debug("CreateFrame: Gear button created")
+
     -- Create macro buttons (starting below CLEAR/INC buttons)
     BGCommsLogger:Debug("CreateFrame: Creating macro buttons")
     self:CreateMacroButtons(frame, -65)

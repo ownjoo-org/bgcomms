@@ -39,6 +39,21 @@ function BGComms:Initialize()
     BGCommsLogger:Debug("Restoring chat channel: " .. BGCommsDB.chatChannel)
     BGCommsCommunications:SetChatChannel(BGCommsDB.chatChannel)
 
+    -- Join BGCOMMS channel for inter-addon communication
+    BGCommsLogger:Debug("Joining BGCOMMS channel")
+    -- Schedule join command to execute after a short delay (allows UI to initialize)
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0.5, function()
+            -- Try to join BGCOMMS channel for inter-addon messages
+            if JoinChannelByName then
+                local success = pcall(JoinChannelByName, "BGCOMMS")
+                if success then
+                    BGCommsLogger:Info("Joined BGCOMMS channel")
+                end
+            end
+        end)
+    end
+
     -- Register slash commands (minimal - no frame creation yet)
     SLASH_BGCOMMS1 = "/bgcomms"
     SLASH_BGCOMMS2 = "/bgc"
