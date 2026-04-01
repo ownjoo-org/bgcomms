@@ -41,8 +41,8 @@ function BGCommsCommunications:GetSmartChannel()
 end
 
 function BGCommsCommunications:SendClear()
-    -- Format: CLEAR message
-    local message = "CLEAR"
+    -- Format: CLEAR message with triangle icons
+    local message = "{triangle}{triangle} CLEAR"
     self:SendMessage(message)
 end
 
@@ -54,10 +54,19 @@ function BGCommsCommunications:SendIncoming(location)
         count = BGCommsUI.currentPriority
     end
 
-    -- Format message (plain text, no color codes)
+    -- Format message with raid marker icons
+    local prefix = ""
+    if count == "1" or count == "2" then
+        prefix = "{star}{star} "
+    elseif count == "3" or count == "4" then
+        prefix = "{circle}{circle} "
+    elseif count == "5+" then
+        prefix = "{cross}{cross} "
+    end
+
     local message
     if count == "0" then
-        -- No count included for priority 0
+        -- No count or prefix for priority 0
         if not location or location == "" then
             message = "INC"
         else
@@ -65,9 +74,9 @@ function BGCommsCommunications:SendIncoming(location)
         end
     else
         if not location or location == "" then
-            message = "INC " .. count
+            message = prefix .. "INC " .. count .. ":"
         else
-            message = "INC " .. count .. " " .. location
+            message = prefix .. "INC " .. count .. ": " .. location
         end
     end
 

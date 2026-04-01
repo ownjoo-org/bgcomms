@@ -44,6 +44,10 @@ function BGComms:Initialize()
     end
     BGCommsLogger:Debug("Slash commands registered")
 
+    -- Create minimap icon on startup
+    BGCommsUI:CreateMinimapIcon()
+    BGCommsLogger:Debug("Minimap icon created on startup")
+
     BGCommsLogger:Info("=== BattlegroundComms Initialize Complete ===")
     BGCommsLogger:Info("Addon loaded! Use /bgc to open the window.")
     print("|cFF00FF00[BGComms]|r Addon loaded! Use /bgc to open the window.")
@@ -190,6 +194,7 @@ end
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
+frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:SetScript("OnEvent", function(self, event, addonName)
     if event == "ADDON_LOADED" and addonName == "BattlegroundComms" then
         BGCommsLogger:Info("ADDON_LOADED event triggered for BattlegroundComms")
@@ -208,5 +213,16 @@ frame:SetScript("OnEvent", function(self, event, addonName)
 
         self:UnregisterEvent("ADDON_LOADED")
         self:UnregisterEvent("PLAYER_LOGIN")
+    elseif event == "ZONE_CHANGED_NEW_AREA" then
+        -- Check if player entered a battleground and show main frame
+        local inBattleground = false
+        if C_PvP and C_PvP.IsInBattleground then
+            inBattleground = C_PvP.IsInBattleground()
+        end
+
+        if inBattleground then
+            BGCommsLogger:Info("Battleground detected - showing main frame")
+            BGCommsUI:Show()
+        end
     end
 end)
