@@ -559,18 +559,24 @@ function BGCommsUI:ShowChannelDropdown(button)
     bgTexture:SetAllPoints(dropdownFrame)
     bgTexture:SetColorTexture(0.1, 0.1, 0.1, 0.7)
 
+    -- Create invisible backdrop to catch clicks outside the dropdown
+    local backdrop = CreateFrame("Frame", nil, UIParent)
+    backdrop:SetFrameStrata("DIALOG")
+    backdrop:SetFrameLevel(99)  -- Just below dropdown
+    backdrop:SetAllPoints(UIParent)
+    backdrop:EnableMouse(true)
+
     -- Add click-away handler: close dropdown if clicking outside
     local closeDropdown = function()
         if button.isDropdownOpen then
             button.isDropdownOpen = false
             dropdownFrame:Hide()
+            backdrop:Hide()
         end
     end
 
-    dropdownFrame:SetScript("OnMouseUp", function(self, mouseButton)
-        if mouseButton == "RightButton" then
-            closeDropdown()
-        end
+    backdrop:SetScript("OnMouseUp", function()
+        closeDropdown()
     end)
 
     -- Create buttons for each channel
