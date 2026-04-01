@@ -349,7 +349,7 @@ end
 
 function BGCommsSettingsPanel:ShowChannelMenu()
     -- Create a proper dropdown menu for channel selection
-    local channels = {"SAY", "YELL", "PARTY", "RAID", "INSTANCE", "GUILD"}
+    local channels = {"SAY", "YELL", "PARTY", "RAID", "BATTLEGROUND", "GUILD"}
 
     -- Hide old dropdown if it exists
     if BGChannelDropdownMenu then

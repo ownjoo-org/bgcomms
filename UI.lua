@@ -539,7 +539,7 @@ end
 
 -- Show channel dropdown menu
 function BGCommsUI:ShowChannelDropdown(button)
-    local channels = {"SAY", "YELL", "PARTY", "RAID", "INSTANCE", "GUILD"}
+    local channels = {"SAY", "YELL", "PARTY", "RAID", "BATTLEGROUND", "GUILD"}
 
     -- Destroy old dropdown if it exists
     if BGCommsChannelDropdownMenu then
