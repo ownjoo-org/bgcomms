@@ -90,7 +90,16 @@ function BGCommsCommunications:SendMessage(message)
     local channel = self:GetSmartChannel()
     local fullMessage = string.format("%s", message)
 
-    SendChatMessage(fullMessage, channel)
+    -- WoW 12.0+ uses C_ChatInfo.SendChatMessage with table parameter
+    if C_ChatInfo and C_ChatInfo.SendChatMessage then
+        C_ChatInfo.SendChatMessage({
+            text = fullMessage,
+            chatType = channel
+        })
+    else
+        -- Fallback for older versions
+        SendChatMessage(fullMessage, channel)
+    end
 end
 
 -- Set the chat channel for future messages
