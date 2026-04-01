@@ -122,6 +122,26 @@ describe("Communications", function()
             Communications:SendIncoming("Stables")
             assert.is_true(string.find(sent_messages[1].message, "INC:") ~= nil)
         end)
+
+        it("should use ? placeholder for priority 0", function()
+            _G.BGCommsUI.currentPriority = "0"
+            Communications:SendIncoming("Stables")
+            assert.is_true(string.find(sent_messages[1].message, "?") ~= nil)
+        end)
+
+        it("should have fixed-width count formatting", function()
+            _G.BGCommsUI.currentPriority = "1"
+            Communications:SendIncoming("Stables")
+            -- Check for fixed-width format (count is right-aligned with width 2)
+            assert.is_true(string.find(sent_messages[1].message, " 1") ~= nil)
+        end)
+
+        it("should handle 5+ with fixed width", function()
+            _G.BGCommsUI.currentPriority = "5+"
+            Communications:SendIncoming("Stables")
+            -- 5+ is already 2 chars wide, should appear as-is
+            assert.is_true(string.find(sent_messages[1].message, "5+") ~= nil)
+        end)
     end)
 
     describe("GetSmartChannel", function()

@@ -69,19 +69,27 @@ function BGCommsCommunications:SendIncoming(location)
         prefix = "{square}{square} "
     end
 
+    -- Format count with fixed width (right-aligned, width 2)
+    -- Use ? as placeholder for priority 0
+    local displayCount = count
+    if count == "0" then
+        displayCount = "?"
+    end
+    local paddedCount = string.format("%2s", displayCount)
+
     local message
     if count == "0" then
         -- Priority 0 with square icons
         if not location or location == "" then
             message = prefix .. "INC"
         else
-            message = prefix .. "INC: " .. location
+            message = prefix .. "INC: " .. paddedCount .. " " .. location
         end
     else
         if not location or location == "" then
-            message = prefix .. "INC: " .. count
+            message = prefix .. "INC: " .. paddedCount
         else
-            message = prefix .. "INC: " .. count .. " " .. location
+            message = prefix .. "INC: " .. paddedCount .. " " .. location
         end
     end
 
