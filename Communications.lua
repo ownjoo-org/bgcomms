@@ -86,17 +86,20 @@ end
 function BGCommsCommunications:SendMessage(message)
     if not message then return end
 
-    -- Use smart channel detection if enabled
     local channel = self:GetSmartChannel()
 
-    -- WoW 12.0 C_ChatInfo.SendChatMessage
-    if C_ChatInfo and C_ChatInfo.SendChatMessage then
-        pcall(function()
-            C_ChatInfo.SendChatMessage({
-                text = message,
-                channel = channel
-            })
-        end)
+    BGCommsLogger:Debug("SendMessage: message='" .. message .. "', channel='" .. channel .. "'")
+
+    -- Try SendChatMessage with string parameters (old API)
+    -- Parameters: text, chatType, language, channel
+    local success, result = pcall(function()
+        return SendChatMessage(message, channel, nil, nil)
+    end)
+
+    if success then
+        BGCommsLogger:Debug("Sent via " .. channel .. ": " .. message)
+    else
+        BGCommsLogger:Error("SendChatMessage failed: " .. tostring(result))
     end
 end
 
