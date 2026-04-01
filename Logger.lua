@@ -25,7 +25,7 @@ BGCommsLogger.history = {}
 BGCommsLogger.maxHistorySize = 100
 
 -- Debug mode: when enabled, writes to disk (SavedVariables) instead of memory
-BGCommsLogger.debugMode = true  -- Default ON for development
+BGCommsLogger.debugMode = false  -- Default OFF
 
 -- Get level name from number
 function BGCommsLogger:GetLevelName(level)
@@ -148,32 +148,32 @@ end
 function BGCommsLogger:SetDebugMode(enabled)
     self.debugMode = enabled
     if enabled then
-        print("|cFF00FF00[BGComms]|r Debug mode ON - logging to disk")
+        print("|cFF00FF00Debug mode ON - logging to disk")
         BGCommsDebugLog = {}  -- Initialize debug log
     else
-        print("|cFF00FF00[BGComms]|r Debug mode OFF - logging to memory")
+        print("|cFF00FF00Debug mode OFF - logging to memory")
     end
 end
 
 -- Get debug log file location
 function BGCommsLogger:GetDebugLogLocation()
-    print("|cFF00FF00[BGComms]|r Debug log file location:")
+    print("|cFF00FF00Debug log file location:")
     print("World of Warcraft/_retail_/WTF/Account/[YourAccount]/SavedVariables/BattlegroundComms.lua")
-    print("|cFF00FF00[BGComms]|r Debug logs are stored in the BGCommsDebugLog variable")
+    print("|cFF00FF00Debug logs are stored in the BGCommsDebugLog variable")
 end
 
 -- Export debug log to file (by showing where it is)
 function BGCommsLogger:ExportDebugLog()
     if not BGCommsDebugLog or #BGCommsDebugLog == 0 then
-        print("|cFF00FF00[BGComms]|r No debug logs recorded")
+        print("|cFF00FF00No debug logs recorded")
         return
     end
 
-    print("|cFF00FF00[BGComms]|r Debug log (" .. #BGCommsDebugLog .. " entries):")
+    print("|cFF00FF00Debug log (" .. #BGCommsDebugLog .. " entries):")
     for _, entry in ipairs(BGCommsDebugLog) do
         print(entry)
     end
 
-    print("|cFF00FF00[BGComms]|r Log file saved to SavedVariables")
+    print("|cFF00FF00Log file saved to SavedVariables")
     self:GetDebugLogLocation()
 end

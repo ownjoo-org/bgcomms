@@ -17,11 +17,11 @@ function BGCommsSettingsPanel:CreateFrame()
     -- Create settings frame
     local frame = CreateFrame("Frame", "BGCommsSettingsFrame", UIParent)
     BGCommsLogger:Debug("Settings frame object created: " .. tostring(frame))
-    frame:SetSize(250, 280)
+    frame:SetSize(270, 220)
 
     -- Restore position from SavedVariables or use defaults
     -- Bounds check: if position is clearly off-screen (legacy bad coordinates), reset to default
-    local posX = -100
+    local posX = 0
     local posY = 0
     if BGCommsDB and BGCommsDB.settingsPanelX then
         -- Only use saved position if it looks reasonable (offset, not absolute screen coordinate)
@@ -73,11 +73,6 @@ function BGCommsSettingsPanel:CreateFrame()
         self:Hide()
     end)
 
-    -- Opacity label
-    local opacityLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    opacityLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -40)
-    opacityLabel:SetText("Opacity:")
-
     -- Declare opacity controls as local variables
     local opacitySlider, opacityValue, opacityInput
 
@@ -96,7 +91,7 @@ function BGCommsSettingsPanel:CreateFrame()
         opacityInput:SetText(tostring(value))
         opacityValue:SetText(value .. "%")
 
-        -- Apply opacity to main frame background
+        -- Apply opacity to main frame background and settings frame background
         if BGCommsUI and BGCommsUI.backgroundTexture then
             if value == 0 then
                 BGCommsUI.backgroundTexture:SetAlpha(0)
@@ -110,19 +105,137 @@ function BGCommsSettingsPanel:CreateFrame()
                 end
             end
         end
+
+        -- Also apply opacity to settings frame background
+        if bgTexture then
+            bgTexture:SetAlpha(opacity)
+        end
     end
 
-    -- Minus button
+    -- LEFT SIDE CONTROLS
+    -- Lock toggle label and checkbox on same line
+    local lockLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    lockLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -40)
+    lockLabel:SetText("Lock Window:")
+
+    local lockCheckbox = CreateFrame("CheckButton", "BGSettingsLockCheckbox", frame, "ChatConfigCheckButtonTemplate")
+    lockCheckbox:SetPoint("LEFT", lockLabel, "RIGHT", 5, 0)
+    lockCheckbox:SetScript("OnClick", function(self)
+        BGCommsUI:ToggleLock()
+        self:SetChecked(BGCommsDB.isLocked)
+    end)
+    self.lockCheckbox = lockCheckbox
+
+    -- Smart Channel label and checkbox on same line
+    local smartLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    smartLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -70)
+    smartLabel:SetText("Smart Channel:")
+
+    local smartCheckbox = CreateFrame("CheckButton", "BGSettingsSmartCheckbox", frame, "ChatConfigCheckButtonTemplate")
+    smartCheckbox:SetPoint("LEFT", smartLabel, "RIGHT", 5, 0)
+    smartCheckbox:SetScript("OnClick", function(self)
+        BGCommsDB.useSmartChannelDetection = self:GetChecked()
+    end)
+    self.smartChannelCheckbox = smartCheckbox
+
+    -- Position X label
+    local posXLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    posXLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -170)
+    posXLabel:SetText("X:")
+
+    -- Position X input field
+    local posXInput = CreateFrame("EditBox", "BGSettingsPosXInput", frame, "InputBoxTemplate")
+    posXInput:SetAutoFocus(false)
+    posXInput:SetSize(40, 22)
+    posXInput:SetPoint("LEFT", posXLabel, "RIGHT", 8, 0)
+    posXInput:SetText("0")
+    posXInput:SetScript("OnEnterPressed", function(self)
+        local valueX = tonumber(self:GetText()) or 0
+        local valueY = tonumber(self.parent.posYInput:GetText()) or 0
+        BGCommsDB.windowX = valueX
+        BGCommsDB.windowY = valueY
+        if BGCommsUI and BGCommsUI.frame then
+            BGCommsUI.frame:ClearAllPoints()
+            BGCommsUI.frame:SetPoint("CENTER", UIParent, "CENTER", valueX, valueY)
+        end
+        self:ClearFocus()
+    end)
+    posXInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    self.posXInput = posXInput
+
+    -- Comma separator
+    local posComma = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    posComma:SetPoint("LEFT", posXInput, "RIGHT", 5, 0)
+    posComma:SetText(",")
+
+    -- Position Y label
+    local posYLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    posYLabel:SetPoint("LEFT", posComma, "RIGHT", 8, 0)
+    posYLabel:SetText("Y:")
+
+    -- Position Y input field
+    local posYInput = CreateFrame("EditBox", "BGSettingsPosYInput", frame, "InputBoxTemplate")
+    posYInput:SetAutoFocus(false)
+    posYInput:SetSize(40, 22)
+    posYInput:SetPoint("LEFT", posYLabel, "RIGHT", 8, 0)
+    posYInput:SetText("0")
+    posYInput:SetScript("OnEnterPressed", function(self)
+        local valueX = tonumber(self.parent.posXInput:GetText()) or 0
+        local valueY = tonumber(self:GetText()) or 0
+        BGCommsDB.windowX = valueX
+        BGCommsDB.windowY = valueY
+        if BGCommsUI and BGCommsUI.frame then
+            BGCommsUI.frame:ClearAllPoints()
+            BGCommsUI.frame:SetPoint("CENTER", UIParent, "CENTER", valueX, valueY)
+        end
+        self:ClearFocus()
+    end)
+    posYInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+    self.posYInput = posYInput
+
+    -- OPACITY CONTROLS
+    -- Opacity label
+    local opacityLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    opacityLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -100)
+    opacityLabel:SetText("Opacity:")
+
+    -- Opacity value display (to the right of label)
+    opacityValue = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    opacityValue:SetPoint("LEFT", opacityLabel, "RIGHT", 10, 0)
+    opacityValue:SetText("50%")
+    opacityValue:SetWidth(50)
+
+    -- Opacity input field (to the right of percentage)
+    opacityInput = CreateFrame("EditBox", "BGSettingsOpacityInput", frame, "InputBoxTemplate")
+    opacityInput:SetAutoFocus(false)
+    opacityInput:SetSize(50, 22)
+    opacityInput:SetPoint("LEFT", opacityValue, "RIGHT", 10, 0)
+    opacityInput:SetText("50")
+
+    opacityInput:SetScript("OnEnterPressed", function(self)
+        local value = tonumber(self:GetText()) or 50
+        updateOpacity(value)
+        self:ClearFocus()
+    end)
+    opacityInput:SetScript("OnEscapePressed", function(self)
+        self:ClearFocus()
+    end)
+
+    -- Minus button (below label)
     local minusButton = CreateFrame("Button", "BGSettingsOpacityMinus", frame, "GameMenuButtonTemplate")
     minusButton:SetSize(25, 22)
-    minusButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -60)
+    minusButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -125)
     minusButton:SetText("-")
     minusButton:SetScript("OnClick", function()
-        local currentValue = math.floor(opacitySlider:GetValue() * 100)
+        local currentValue = tonumber(opacityInput:GetText()) or 50
         updateOpacity(currentValue - 1)
     end)
 
-    -- Opacity slider (0-1 range with OptionsSliderTemplate for smooth operation)
+    -- Horizontal opacity slider
     opacitySlider = CreateFrame("Slider", "BGSettingsOpacitySlider", frame, "OptionsSliderTemplate")
     opacitySlider:SetSize(100, 15)
     opacitySlider:SetPoint("LEFT", minusButton, "RIGHT", 3, 0)
@@ -137,22 +250,9 @@ function BGCommsSettingsPanel:CreateFrame()
     plusButton:SetPoint("LEFT", opacitySlider, "RIGHT", 3, 0)
     plusButton:SetText("+")
     plusButton:SetScript("OnClick", function()
-        local currentValue = math.floor(opacitySlider:GetValue() * 100)
+        local currentValue = tonumber(opacityInput:GetText()) or 50
         updateOpacity(currentValue + 1)
     end)
-
-    -- Opacity value display
-    opacityValue = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    opacityValue:SetPoint("LEFT", plusButton, "RIGHT", 10, 0)
-    opacityValue:SetText("50%")
-    opacityValue:SetWidth(50)
-
-    -- Opacity input field
-    opacityInput = CreateFrame("EditBox", "BGSettingsOpacityInput", frame, "InputBoxTemplate")
-    opacityInput:SetAutoFocus(false)
-    opacityInput:SetSize(50, 22)
-    opacityInput:SetPoint("LEFT", opacityValue, "RIGHT", 10, 0)
-    opacityInput:SetText("50")
 
     opacityInput:SetScript("OnEnterPressed", function(self)
         local value = tonumber(self:GetText()) or 50
@@ -173,54 +273,12 @@ function BGCommsSettingsPanel:CreateFrame()
         updateOpacity(value * 100)
     end)
 
-    -- Lock toggle label
-    local lockLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    lockLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -160)
-    lockLabel:SetText("Lock Window:")
-
-    -- Lock toggle checkbox
-    local lockCheckbox = CreateFrame("CheckButton", "BGSettingsLockCheckbox", frame, "ChatConfigCheckButtonTemplate")
-    lockCheckbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -180)
-    lockCheckbox:SetScript("OnClick", function(self)
-        BGCommsUI:ToggleLock()
-        self:SetChecked(BGCommsDB.isLocked)
-    end)
-    self.lockCheckbox = lockCheckbox
-
-    -- Smart Channel label
-    local smartLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    smartLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -210)
-    smartLabel:SetText("Smart Channel:")
-
-    -- Smart Channel checkbox
-    local smartCheckbox = CreateFrame("CheckButton", "BGSettingsSmartCheckbox", frame, "ChatConfigCheckButtonTemplate")
-    smartCheckbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -230)
-    smartCheckbox:SetScript("OnClick", function(self)
-        BGCommsDB.useSmartChannelDetection = self:GetChecked()
-    end)
-    self.smartChannelCheckbox = smartCheckbox
-
-    -- Hide Title label
-    local hideTitleLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    hideTitleLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -260)
-    hideTitleLabel:SetText("Hide Title:")
-
-    -- Hide Title checkbox
-    local hideTitleCheckbox = CreateFrame("CheckButton", "BGSettingsHideTitleCheckbox", frame, "ChatConfigCheckButtonTemplate")
-    hideTitleCheckbox:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -280)
-    hideTitleCheckbox:SetScript("OnClick", function(self)
-        BGCommsDB.hideTitle = self:GetChecked()
-        if BGCommsUI and BGCommsUI.title then
-            if BGCommsDB.hideTitle then
-                BGCommsUI.title:Hide()
-            else
-                BGCommsUI.title:Show()
-            end
-        end
-    end)
-    self.hideTitleCheckbox = hideTitleCheckbox
+    -- Set up parent references so each input can access the other
+    posXInput.parent = self
+    posYInput.parent = self
 
     self.frame = frame
+    self.backgroundTexture = bgTexture  -- Store reference for opacity control
     self:UpdateAllSettings()
 end
 
@@ -240,8 +298,8 @@ function BGCommsSettingsPanel:UpdateAllSettings()
     self:UpdateLockDisplay()
     BGCommsLogger:Debug("Updating smart channel display...")
     self:UpdateSmartChannelDisplay()
-    BGCommsLogger:Debug("Updating hide title display...")
-    self:UpdateHideTitleDisplay()
+    BGCommsLogger:Debug("Updating position display...")
+    self:UpdatePositionDisplay()
     BGCommsLogger:Debug("UpdateAllSettings complete")
 end
 
@@ -278,9 +336,14 @@ function BGCommsSettingsPanel:UpdateSmartChannelDisplay()
     end
 end
 
-function BGCommsSettingsPanel:UpdateHideTitleDisplay()
-    if self.hideTitleCheckbox then
-        self.hideTitleCheckbox:SetChecked(BGCommsDB.hideTitle or false)
+function BGCommsSettingsPanel:UpdatePositionDisplay()
+    if self.posXInput then
+        local posX = BGCommsDB and BGCommsDB.windowX or 0
+        self.posXInput:SetText(tostring(math.floor(posX)))
+    end
+    if self.posYInput then
+        local posY = BGCommsDB and BGCommsDB.windowY or 0
+        self.posYInput:SetText(tostring(math.floor(posY)))
     end
 end
 

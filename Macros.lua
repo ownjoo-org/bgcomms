@@ -49,11 +49,11 @@ end
 function BGCommsMacros:ListMacros()
     local macros = self:GetMacros()
     if not next(macros) then
-        print("|cFF00FF00[BGComms]|r No custom macros defined.")
+        print("|cFF00FF00No custom macros defined.")
         return
     end
 
-    print("|cFF00FF00[BGComms]|r Custom BGCommsMacros:")
+    print("|cFF00FF00Custom BGCommsMacros:")
     for name, message in pairs(macros) do
         print(string.format("  |cFFFFFF00%s:|r %s", name, message))
     end

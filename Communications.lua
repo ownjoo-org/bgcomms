@@ -88,7 +88,7 @@ function BGCommsCommunications:SendMessage(message)
 
     -- Use smart channel detection if enabled
     local channel = self:GetSmartChannel()
-    local fullMessage = string.format("[BGComms] %s", message)
+    local fullMessage = string.format("%s", message)
 
     SendChatMessage(fullMessage, channel)
 end
