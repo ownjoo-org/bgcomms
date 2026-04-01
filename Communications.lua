@@ -90,9 +90,13 @@ function BGCommsCommunications:SendMessage(message)
     local channel = self:GetSmartChannel()
     local fullMessage = string.format("%s", message)
 
-    -- WoW 12.0+ requires C_ChatInfo.SendChatMessage (SendChatMessage is now protected)
-    if C_ChatInfo and C_ChatInfo.SendChatMessage then
-        C_ChatInfo.SendChatMessage(fullMessage, channel)
+    -- Use pcall to handle API errors gracefully
+    local success, err = pcall(function()
+        SendChatMessage(fullMessage, channel)
+    end)
+
+    if not success and BGCommsLogger then
+        BGCommsLogger:Debug("SendChatMessage error for channel " .. tostring(channel) .. ": " .. tostring(err))
     end
 end
 
