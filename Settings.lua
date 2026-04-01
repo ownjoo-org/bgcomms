@@ -123,7 +123,7 @@ function BGCommsSettingsPanel:CreateFrame()
     end)
 
     -- Opacity slider (0-100%)
-    local opacitySlider = CreateFrame("Slider", "BGSettingsOpacitySlider", frame)
+    opacitySlider = CreateFrame("Slider", "BGSettingsOpacitySlider", frame)
     opacitySlider:SetSize(100, 15)
     opacitySlider:SetPoint("LEFT", minusButton, "RIGHT", 3, 0)
     opacitySlider:SetMinMaxValues(0, 100)
@@ -154,28 +154,18 @@ function BGCommsSettingsPanel:CreateFrame()
     end)
 
     -- Opacity value display
-    local opacityValue = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    opacityValue = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     opacityValue:SetPoint("LEFT", plusButton, "RIGHT", 10, 0)
     opacityValue:SetText("50%")
     opacityValue:SetWidth(50)
 
     -- Opacity input field
-    local opacityInput = CreateFrame("EditBox", "BGSettingsOpacityInput", frame)
+    opacityInput = CreateFrame("EditBox", "BGSettingsOpacityInput", frame, "InputBoxTemplate")
     opacityInput:SetAutoFocus(false)
     opacityInput:SetSize(50, 22)
     opacityInput:SetPoint("LEFT", opacityValue, "RIGHT", 10, 0)
-    opacityInput:SetFont("Fonts/FRIZQT__.TTF", 12)
-    opacityInput:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-        edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-        tile = true,
-        tileSize = 16,
-        edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
-    opacityInput:SetBackdropColor(0, 0, 0, 0.5)
-    opacityInput:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
     opacityInput:SetText("50")
+
     opacityInput:SetScript("OnEnterPressed", function(self)
         local value = tonumber(self:GetText()) or 50
         updateOpacity(value)
