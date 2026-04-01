@@ -19,6 +19,10 @@ function BGComms:Initialize()
 
     -- Initialize SavedVariables defaults
     BGCommsDB.chatChannel = BGCommsDB.chatChannel or "PARTY"
+    -- Migrate old "INSTANCE" channel to "BATTLEGROUND" (WoW 12.0)
+    if BGCommsDB.chatChannel == "INSTANCE" then
+        BGCommsDB.chatChannel = "BATTLEGROUND"
+    end
     BGCommsDB.windowX = BGCommsDB.windowX or 0     -- Centered horizontally
     BGCommsDB.windowY = BGCommsDB.windowY or -800  -- 800px above center
     BGCommsDB.isLocked = BGCommsDB.isLocked or false
