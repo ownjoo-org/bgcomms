@@ -20,6 +20,7 @@ describe("Locations", function()
         }
 
         _G.BGCommsLogger = {
+            NOTSET = 0,
             DEBUG = 10,
             INFO = 20,
             WARNING = 30,

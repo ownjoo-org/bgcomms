@@ -5,6 +5,7 @@ BGCommsLogger = {}
 
 -- Log level constants (higher number = more severe)
 -- Only log messages where: message_level >= current_loglevel
+BGCommsLogger.NOTSET = 0
 BGCommsLogger.DEBUG = 10
 BGCommsLogger.INFO = 20
 BGCommsLogger.WARNING = 30
@@ -30,7 +31,8 @@ BGCommsLogger.maxHistorySize = 100
 
 -- Get level name from number
 function BGCommsLogger:GetLevelName(level)
-    if level == self.DEBUG then return "DEBUG"
+    if level == self.NOTSET then return "NOTSET"
+    elseif level == self.DEBUG then return "DEBUG"
     elseif level == self.INFO then return "INFO"
     elseif level == self.WARNING then return "WARNING"
     elseif level == self.ERROR then return "ERROR"
@@ -156,7 +158,8 @@ end
 -- Parse log level string to number
 function BGCommsLogger:ParseLogLevel(levelStr)
     levelStr = levelStr:upper()
-    if levelStr == "DEBUG" then return self.DEBUG
+    if levelStr == "NOTSET" then return self.NOTSET
+    elseif levelStr == "DEBUG" then return self.DEBUG
     elseif levelStr == "INFO" then return self.INFO
     elseif levelStr == "WARNING" then return self.WARNING
     elseif levelStr == "ERROR" then return self.ERROR

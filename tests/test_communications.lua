@@ -16,6 +16,7 @@ describe("Communications", function()
 
         -- Mock logger with all methods
         _G.BGCommsLogger = {
+            NOTSET = 0,
             DEBUG = 10,
             INFO = 20,
             WARNING = 30,
