@@ -19,9 +19,9 @@ function BGComms:Initialize()
 
     -- Initialize SavedVariables defaults
     BGCommsDB.chatChannel = BGCommsDB.chatChannel or "PARTY"
-    -- Migrate old "INSTANCE" channel to "BATTLEGROUND" (WoW 12.0)
+    -- Migrate old "INSTANCE" channel to "INSTANCE" (WoW 12.0)
     if BGCommsDB.chatChannel == "INSTANCE" then
-        BGCommsDB.chatChannel = "BATTLEGROUND"
+        BGCommsDB.chatChannel = "INSTANCE"
     end
     BGCommsDB.windowX = BGCommsDB.windowX or 0     -- Centered horizontally
     BGCommsDB.windowY = BGCommsDB.windowY or -800  -- 800px above center
@@ -106,7 +106,7 @@ function BGComms:PrintHelp()
     print("|cFFFFFF00/bgc show|r - Show main window")
     print("|cFFFFFF00/bgc hide|r - Hide main window")
     print("|cFFFFFF00/bgc settings|r - Open settings panel")
-    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (SAY/YELL/PARTY/RAID/BATTLEGROUND/GUILD)")
+    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (SAY/YELL/PARTY/RAID/INSTANCE/GUILD)")
     print("|cFFFFFF00/bgc inc <location>|r - Send incoming message")
     print("|cFFFFFF00/bgc clear|r - Send clear message")
     print("|cFFFFFF00/bgc smartchannel on|off|r - Toggle smart channel detection")
@@ -123,14 +123,14 @@ function BGComms:HandleChannelCommand(msg)
 
     if not channel or channel == "" then
         print("|cFF00FF00Current channel: " .. BGCommsCommunications:GetChatChannel())
-        print("|cFF00FF00Usage: /bgc channel <SAY|YELL|PARTY|RAID|BATTLEGROUND|GUILD>")
+        print("|cFF00FF00Usage: /bgc channel <SAY|YELL|PARTY|RAID|INSTANCE|GUILD>")
         return
     end
 
     -- Validate channel
-    if channel ~= "SAY" and channel ~= "YELL" and channel ~= "PARTY" and channel ~= "RAID" and channel ~= "BATTLEGROUND" and channel ~= "GUILD" then
+    if channel ~= "SAY" and channel ~= "YELL" and channel ~= "PARTY" and channel ~= "RAID" and channel ~= "INSTANCE" and channel ~= "GUILD" then
         print("|cFF00FF00Invalid channel: " .. channel)
-        print("|cFF00FF00Valid channels: SAY, YELL, PARTY, RAID, BATTLEGROUND, GUILD")
+        print("|cFF00FF00Valid channels: SAY, YELL, PARTY, RAID, INSTANCE, GUILD")
         return
     end
 

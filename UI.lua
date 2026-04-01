@@ -352,7 +352,7 @@ function BGCommsUI:CreateFrame()
     self.priorityButtons[1].textString:SetTextColor(0, 0, 0)  -- Black
     BGCommsLogger:Debug("CreateFrame: Priority buttons created")
 
-    -- Channel dropdown button (wider to fit BATTLEGROUND) - centered
+    -- Channel dropdown button (wider to fit INSTANCE) - centered
     local channelDropdown = CreateFrame("Button", "BGCommsChannelDropdown", frame)
     channelDropdown:SetSize(130, 22)
     channelDropdown:SetPoint("TOPLEFT", frame, "TOPLEFT", contentMargin, -40)
@@ -539,7 +539,7 @@ end
 
 -- Show channel dropdown menu
 function BGCommsUI:ShowChannelDropdown(button)
-    local channels = {"SAY", "YELL", "PARTY", "RAID", "BATTLEGROUND", "GUILD"}
+    local channels = {"SAY", "YELL", "PARTY", "RAID", "INSTANCE", "GUILD"}
 
     -- Destroy old dropdown if it exists
     if BGCommsChannelDropdownMenu then
