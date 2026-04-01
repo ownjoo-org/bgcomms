@@ -26,11 +26,12 @@ describe("Locations", function()
             ERROR = 4,
             CRITICAL = 5,
             currentLevel = 3,
-            Debug = function() end,
-            Info = function() end,
-            Warning = function() end,
-            Error = function() end,
-            Critical = function() end,
+            history = {},
+            Debug = function(self, msg) table.insert(self.history, msg) end,
+            Info = function(self, msg) table.insert(self.history, msg) end,
+            Warning = function(self, msg) table.insert(self.history, msg) end,
+            Error = function(self, msg) table.insert(self.history, msg) end,
+            Critical = function(self, msg) table.insert(self.history, msg) end,
         }
     end)
 

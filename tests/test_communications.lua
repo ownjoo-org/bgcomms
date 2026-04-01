@@ -22,14 +22,15 @@ describe("Communications", function()
             ERROR = 4,
             CRITICAL = 5,
             currentLevel = 3,
-            Debug = function() end,
-            Info = function() end,
-            Warning = function() end,
-            Error = function() end,
-            Critical = function() end,
-            SetLogLevel = function() end,
-            GetLogLevelName = function() return "WARNING" end,
-            ParseLogLevel = function() return 3 end,
+            history = {},
+            Debug = function(self, msg) table.insert(self.history, msg) end,
+            Info = function(self, msg) table.insert(self.history, msg) end,
+            Warning = function(self, msg) table.insert(self.history, msg) end,
+            Error = function(self, msg) table.insert(self.history, msg) end,
+            Critical = function(self, msg) table.insert(self.history, msg) end,
+            SetLogLevel = function(self, level) self.currentLevel = level end,
+            GetLogLevelName = function(self) return "WARNING" end,
+            ParseLogLevel = function(self, str) return 3 end,
         }
 
         -- Mock BGCommsUI for priority
