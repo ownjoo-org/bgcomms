@@ -8,7 +8,7 @@ describe("Locations", function()
 
         -- Mock WoW APIs
         _G.C_Map = {
-            GetBestMapID = function() return nil end,
+            GetBestMapForUnit = function() return nil end,
             GetMapInfo = function() return nil end,
         }
 
@@ -144,7 +144,7 @@ describe("Locations", function()
 
     describe("GetPlayerLocation", function()
         it("should return Location when no zone detected", function()
-            _G.C_Map.GetBestMapID = function() return nil end
+            _G.C_Map.GetBestMapForUnit = function() return nil end
             _G.GetSubZoneText = function() return "" end
             _G.GetRealZoneText = function() return "" end
             local location = Locations:GetPlayerLocation()
@@ -152,21 +152,21 @@ describe("Locations", function()
         end)
 
         it("should prefer C_Map API if available", function()
-            _G.C_Map.GetBestMapID = function() return 1 end
+            _G.C_Map.GetBestMapForUnit = function() return 1 end
             _G.C_Map.GetMapInfo = function() return { name = "Main Base" } end
             local location = Locations:GetPlayerLocation()
             assert.is_equal("Main Base", location)
         end)
 
-        it("should fallback to GetSubZoneText if C_Map unavailable", function()
-            _G.C_Map.GetBestMapID = function() return nil end
+        it("should fallback to GetSubZoneText if C_Map returns nil", function()
+            _G.C_Map.GetBestMapForUnit = function() return nil end
             _G.GetSubZoneText = function() return "Blacksmith" end
             local location = Locations:GetPlayerLocation()
             assert.is_equal("Blacksmith", location)
         end)
 
         it("should fallback to GetRealZoneText if subzone empty", function()
-            _G.C_Map.GetBestMapID = function() return nil end
+            _G.C_Map.GetBestMapForUnit = function() return nil end
             _G.GetSubZoneText = function() return "" end
             _G.GetRealZoneText = function() return "Arathi Basin" end
             local location = Locations:GetPlayerLocation()
