@@ -81,7 +81,7 @@ function BGCommsSettingsPanel:CreateFrame()
     -- Declare opacity controls as local variables
     local opacitySlider, opacityValue, opacityInput
 
-    -- Helper function to update opacity
+    -- Helper function to update opacity (expects 0-100 value)
     local function updateOpacity(value)
         value = math.floor(value)
         if value < 0 then value = 0 elseif value > 100 then value = 100 end
@@ -91,8 +91,8 @@ function BGCommsSettingsPanel:CreateFrame()
             BGCommsDB.backgroundOpacity = opacity
         end
 
-        -- Update slider and input field
-        opacitySlider:SetValue(value)
+        -- Update slider (0-1 range) and input field (0-100 range)
+        opacitySlider:SetValue(opacity)
         opacityInput:SetText(tostring(value))
         opacityValue:SetText(value .. "%")
 
@@ -118,30 +118,18 @@ function BGCommsSettingsPanel:CreateFrame()
     minusButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -60)
     minusButton:SetText("-")
     minusButton:SetScript("OnClick", function()
-        local currentValue = math.floor(opacitySlider:GetValue())
+        local currentValue = math.floor(opacitySlider:GetValue() * 100)
         updateOpacity(currentValue - 1)
     end)
 
-    -- Opacity slider (0-100%)
-    opacitySlider = CreateFrame("Slider", "BGSettingsOpacitySlider", frame)
+    -- Opacity slider (0-1 range with OptionsSliderTemplate for smooth operation)
+    opacitySlider = CreateFrame("Slider", "BGSettingsOpacitySlider", frame, "OptionsSliderTemplate")
     opacitySlider:SetSize(100, 15)
     opacitySlider:SetPoint("LEFT", minusButton, "RIGHT", 3, 0)
-    opacitySlider:SetMinMaxValues(0, 100)
-    opacitySlider:SetValue(50)
-    opacitySlider:SetValueStep(1)
+    opacitySlider:SetMinMaxValues(0, 1)
+    opacitySlider:SetValue(0.5)
+    opacitySlider:SetValueStep(0.01)
     opacitySlider:SetOrientation("HORIZONTAL")
-
-    -- Slider texture
-    local sliderTex = opacitySlider:CreateTexture(nil, "BACKGROUND")
-    sliderTex:SetAllPoints(opacitySlider)
-    sliderTex:SetTexture("Interface/Buttons/UI-SliderBar-Background")
-
-    -- Slider thumb
-    local thumb = opacitySlider:GetThumbTexture()
-    if thumb then
-        thumb:SetTexture("Interface/Buttons/UI-SliderBar-Button-Horizontal")
-        thumb:SetSize(16, 16)
-    end
 
     -- Plus button
     local plusButton = CreateFrame("Button", "BGSettingsOpacityPlus", frame, "GameMenuButtonTemplate")
@@ -149,7 +137,7 @@ function BGCommsSettingsPanel:CreateFrame()
     plusButton:SetPoint("LEFT", opacitySlider, "RIGHT", 3, 0)
     plusButton:SetText("+")
     plusButton:SetScript("OnClick", function()
-        local currentValue = math.floor(opacitySlider:GetValue())
+        local currentValue = math.floor(opacitySlider:GetValue() * 100)
         updateOpacity(currentValue + 1)
     end)
 
@@ -181,7 +169,8 @@ function BGCommsSettingsPanel:CreateFrame()
 
     -- Slider value change handler
     opacitySlider:SetScript("OnValueChanged", function(self, value)
-        updateOpacity(value)
+        -- Slider is 0-1 range, convert to 0-100 for updateOpacity
+        updateOpacity(value * 100)
     end)
 
     -- Lock toggle label
@@ -265,7 +254,7 @@ end
 function BGCommsSettingsPanel:UpdateOpacityDisplay()
     if self.opacitySlider then
         local opacity = BGCommsDB and BGCommsDB.backgroundOpacity or 0.5
-        self.opacitySlider:SetValue(opacity * 100)
+        self.opacitySlider:SetValue(opacity)  -- Slider expects 0-1 range
     end
     if self.opacityValue then
         local opacity = BGCommsDB and BGCommsDB.backgroundOpacity or 0.5

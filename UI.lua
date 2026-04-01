@@ -240,7 +240,7 @@ function BGCommsUI:CreateFrame()
     BGCommsLogger:Debug("CreateFrame: Creating background texture")
     local bgTexture = frame:CreateTexture(nil, "BACKGROUND")
     bgTexture:SetAllPoints(frame)
-    bgTexture:SetColorTexture(0, 0, 0, 0.5)
+    bgTexture:SetColorTexture(0, 0, 0, 1)  -- Use alpha 1 and control via SetAlpha
     self.backgroundTexture = bgTexture
     BGCommsLogger:Debug("CreateFrame: Background texture created")
 
