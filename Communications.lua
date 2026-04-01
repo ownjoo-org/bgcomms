@@ -3,7 +3,7 @@
 BGCommsCommunications = {}
 
 -- Chat channel configuration (modify as needed)
--- Valid channels: SAY, YELL, PARTY, RAID, INSTANCE_CHAT (battleground), GUILD
+-- Valid channels: SAY, YELL, PARTY, RAID, INSTANCE (battleground), GUILD
 BGCommsCommunications.CHAT_CHANNEL = "PARTY"
 
 -- Determine the best channel to use based on current situation
@@ -20,7 +20,7 @@ function BGCommsCommunications:GetSmartChannel()
     end
 
     if inBattleground then
-        return "INSTANCE_CHAT"  -- Battleground/instance chat
+        return "INSTANCE"  -- Battleground/instance chat
     end
 
     -- Check for raid group
