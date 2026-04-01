@@ -38,6 +38,11 @@ describe("Communications", function()
         _G.BGCommsUI = {
             currentPriority = "0"
         }
+
+        -- Mock BGCommsLocations for location detection
+        _G.BGCommsLocations = {
+            GetPlayerLocation = function() return "Stables" end
+        }
     end)
 
     describe("SendClear", function()
@@ -50,6 +55,11 @@ describe("Communications", function()
         it("should include triangle icons", function()
             Communications:SendClear()
             assert.is_true(string.find(sent_messages[1].message, "{triangle}") ~= nil)
+        end)
+
+        it("should include current location", function()
+            Communications:SendClear()
+            assert.is_true(string.find(sent_messages[1].message, "Stables") ~= nil)
         end)
     end)
 

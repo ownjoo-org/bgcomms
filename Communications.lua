@@ -41,8 +41,11 @@ function BGCommsCommunications:GetSmartChannel()
 end
 
 function BGCommsCommunications:SendClear()
-    -- Format: CLEAR message with triangle icons
-    local message = "{triangle}{triangle} CLEAR"
+    -- Get current location
+    local location = BGCommsLocations:GetPlayerLocation()
+
+    -- Format: CLEAR message with triangle icons and location
+    local message = "{triangle}{triangle} CLEAR " .. location
     self:SendMessage(message)
 end
 
