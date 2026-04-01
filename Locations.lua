@@ -80,9 +80,23 @@ function BGCommsLocations:GetCurrentBattlegroundType()
         return nil
     end
 
-    -- Get the current zone text as battleground name
-    local zone = GetRealZoneText()
-    return zone
+    -- Get the current zone name via C_Map API
+    if C_Map and C_Map.GetBestMapForUnit then
+        local mapID = C_Map.GetBestMapForUnit("player")
+        if mapID then
+            local mapInfo = C_Map.GetMapInfo(mapID)
+            if mapInfo and mapInfo.name then
+                return mapInfo.name
+            end
+        end
+    end
+
+    -- Fallback to legacy API if C_Map unavailable
+    if GetRealZoneText then
+        return GetRealZoneText()
+    end
+
+    return nil
 end
 
 -- Map battleground names to location tables
@@ -131,8 +145,8 @@ function BGCommsLocations:GetPlayerLocation()
     local location = nil
 
     -- WoW 12.0+ uses C_Map for zone information
-    if C_Map and C_Map.GetBestMapID then
-        local mapID = C_Map.GetBestMapID()
+    if C_Map and C_Map.GetBestMapForUnit then
+        local mapID = C_Map.GetBestMapForUnit("player")
         if mapID then
             local mapInfo = C_Map.GetMapInfo(mapID)
             if mapInfo and mapInfo.name then
