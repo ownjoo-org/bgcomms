@@ -45,7 +45,7 @@ function BGCommsCommunications:SendClear()
     local location = BGCommsLocations:GetPlayerLocation()
 
     -- Format: CLEAR message with triangle icons and location
-    local message = "{triangle}{triangle} CLEAR " .. location
+    local message = "{triangle}{triangle} CLEAR: " .. location
     self:SendMessage(message)
 end
 

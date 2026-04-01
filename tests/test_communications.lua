@@ -61,6 +61,11 @@ describe("Communications", function()
             Communications:SendClear()
             assert.is_true(string.find(sent_messages[1].message, "Stables") ~= nil)
         end)
+
+        it("should have colon after CLEAR", function()
+            Communications:SendClear()
+            assert.is_true(string.find(sent_messages[1].message, "CLEAR:") ~= nil)
+        end)
     end)
 
     describe("SendIncoming", function()
