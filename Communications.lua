@@ -20,7 +20,7 @@ function BGCommsCommunications:GetSmartChannel()
     end
 
     if inBattleground then
-        return "INSTANCE"  -- Battleground chat
+        return "INSTANCE_CHAT"  -- Battleground chat
     end
 
     -- Check for raid group

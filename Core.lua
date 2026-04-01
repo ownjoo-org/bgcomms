@@ -19,9 +19,9 @@ function BGComms:Initialize()
 
     -- Initialize SavedVariables defaults
     BGCommsDB.chatChannel = BGCommsDB.chatChannel or "PARTY"
-    -- Migrate old "INSTANCE" channel to "INSTANCE" (WoW 12.0)
-    if BGCommsDB.chatChannel == "INSTANCE" then
-        BGCommsDB.chatChannel = "INSTANCE"
+    -- Migrate old channel values
+    if BGCommsDB.chatChannel == "INSTANCE" or BGCommsDB.chatChannel == "BATTLEGROUND" then
+        BGCommsDB.chatChannel = "INSTANCE_CHAT"
     end
     BGCommsDB.windowX = BGCommsDB.windowX or 0     -- Centered horizontally
     BGCommsDB.windowY = BGCommsDB.windowY or -800  -- 800px above center
@@ -106,7 +106,7 @@ function BGComms:PrintHelp()
     print("|cFFFFFF00/bgc show|r - Show main window")
     print("|cFFFFFF00/bgc hide|r - Hide main window")
     print("|cFFFFFF00/bgc settings|r - Open settings panel")
-    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (SAY/YELL/PARTY/RAID/INSTANCE/GUILD)")
+    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (SAY/YELL/PARTY/RAID/INSTANCE_CHAT/GUILD)")
     print("|cFFFFFF00/bgc inc <location>|r - Send incoming message")
     print("|cFFFFFF00/bgc clear|r - Send clear message")
     print("|cFFFFFF00/bgc smartchannel on|off|r - Toggle smart channel detection")
@@ -128,9 +128,9 @@ function BGComms:HandleChannelCommand(msg)
     end
 
     -- Validate channel
-    if channel ~= "SAY" and channel ~= "YELL" and channel ~= "PARTY" and channel ~= "RAID" and channel ~= "INSTANCE" and channel ~= "GUILD" then
+    if channel ~= "SAY" and channel ~= "YELL" and channel ~= "PARTY" and channel ~= "RAID" and channel ~= "INSTANCE_CHAT" and channel ~= "GUILD" then
         print("|cFF00FF00Invalid channel: " .. channel)
-        print("|cFF00FF00Valid channels: SAY, YELL, PARTY, RAID, INSTANCE, GUILD")
+        print("|cFF00FF00Valid channels: SAY, YELL, PARTY, RAID, INSTANCE_CHAT, GUILD")
         return
     end
 
