@@ -3,6 +3,9 @@
 
 BGCommsLocations = {}
 
+-- Track last location to detect changes
+BGCommsLocations.lastLocation = nil
+
 -- Arathi Basin zones
 BGCommsLocations.ArathiBasin = {
     "Stables",
@@ -151,30 +154,34 @@ function BGCommsLocations:GetPlayerLocation()
             local mapInfo = C_Map.GetMapInfo(mapID)
             if mapInfo and mapInfo.name then
                 location = mapInfo.name
-                BGCommsLogger:Debug("GetPlayerLocation: C_Map returned '" .. tostring(location) .. "'")
-                return location
             end
         end
     end
 
     -- Fallback to legacy API if available
-    if GetSubZoneText then
+    if not location and GetSubZoneText then
         local subZone = GetSubZoneText()
         if subZone and subZone ~= "" then
-            BGCommsLogger:Debug("GetPlayerLocation: GetSubZoneText returned '" .. subZone .. "'")
-            return subZone
+            location = subZone
         end
     end
 
-    if GetRealZoneText then
+    if not location and GetRealZoneText then
         local zone = GetRealZoneText()
         if zone and zone ~= "" then
-            BGCommsLogger:Debug("GetPlayerLocation: GetRealZoneText returned '" .. zone .. "'")
-            return zone
+            location = zone
         end
     end
 
-    -- If no zone detected, return generic location
-    BGCommsLogger:Debug("GetPlayerLocation: No location detected")
-    return "Location"
+    if not location then
+        location = "Location"
+    end
+
+    -- Log location changes only (avoid spam of same location)
+    if location ~= self.lastLocation then
+        BGCommsLogger:Debug("Location changed to: " .. location)
+        self.lastLocation = location
+    end
+
+    return location
 end

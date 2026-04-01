@@ -53,7 +53,6 @@ function BGComms:Initialize()
 
     BGCommsLogger:Info("=== BattlegroundComms Initialize Complete ===")
     BGCommsLogger:Info("Addon loaded! Use /bgc to open the window.")
-    print("|cFF00FF00Addon loaded! Use /bgc to open the window.")
 end
 
 function BGComms:HandleSlashCommand(msg)
@@ -74,17 +73,15 @@ function BGComms:HandleSlashCommand(msg)
         BGCommsCommunications:SendClear()
     elseif msg == "debug" then
         BGCommsLogger:PrintHistory()
-    elseif string.sub(msg, 1, 10) == "debug_mode" then
-        local mode = string.sub(msg, 12):lower()
-        if mode == "on" then
-            BGCommsLogger:SetDebugMode(true)
-        elseif mode == "off" then
-            BGCommsLogger:SetDebugMode(false)
+    elseif string.sub(msg, 1, 9) == "loglevel" then
+        local levelStr = string.sub(msg, 11):upper():match("%S+")
+        if levelStr then
+            local level = BGCommsLogger:ParseLogLevel(levelStr)
+            BGCommsLogger:SetLogLevel(level)
         else
-            print("|cFF00FF00Usage: /bgc debug_mode <on|off>")
+            BGCommsLogger:Info("Current log level: " .. BGCommsLogger:GetLogLevelName())
+            BGCommsLogger:Info("Usage: /bgc loglevel <DEBUG|INFO|WARNING|ERROR|CRITICAL>")
         end
-    elseif msg == "exportlog" then
-        BGCommsLogger:ExportDebugLog()
     elseif string.sub(msg, 1, 3) == "inc" then
         local location = string.sub(msg, 5)  -- Everything after "inc "
         BGCommsCommunications:SendIncoming(location)
@@ -95,48 +92,47 @@ function BGComms:HandleSlashCommand(msg)
     elseif string.sub(msg, 1, 12) == "smartchannel" then
         self:HandleSmartChannelCommand(string.sub(msg, 14))  -- Everything after "smartchannel "
     else
-        print("|cFF00FF00Unknown command: /" .. msg)
-        print("|cFF00FF00Type /bgc help for available commands")
+        BGCommsLogger:Error("Unknown command: /bgc " .. msg)
+        BGCommsLogger:Info("Type /bgc help for available commands")
     end
 end
 
 function BGComms:PrintHelp()
-    print("|cFF00FF00Available Commands:")
-    print("|cFFFFFF00/bgc|r - Toggle main window")
-    print("|cFFFFFF00/bgc show|r - Show main window")
-    print("|cFFFFFF00/bgc hide|r - Hide main window")
-    print("|cFFFFFF00/bgc settings|r - Open settings panel")
-    print("|cFFFFFF00/bgc channel <name>|r - Set chat channel (SAY/YELL/PARTY/RAID/INSTANCE_CHAT/GUILD)")
-    print("|cFFFFFF00/bgc inc <location>|r - Send incoming message")
-    print("|cFFFFFF00/bgc clear|r - Send clear message")
-    print("|cFFFFFF00/bgc smartchannel on|off|r - Toggle smart channel detection")
-    print("|cFFFFFF00/bgc macro add <name> <msg>|r - Create macro")
-    print("|cFFFFFF00/bgc macro remove <name>|r - Delete macro")
-    print("|cFFFFFF00/bgc macro list|r - List macros")
-    print("|cFFFFFF00/bgc debug|r - Show debug log")
-    print("|cFFFFFF00/bgc debug_mode on|off|r - Enable/disable debug logging to disk")
-    print("|cFFFFFF00/bgc exportlog|r - Export debug log from disk")
+    BGCommsLogger:Info("Available Commands:")
+    BGCommsLogger:Info("/bgc - Toggle main window")
+    BGCommsLogger:Info("/bgc show - Show main window")
+    BGCommsLogger:Info("/bgc hide - Hide main window")
+    BGCommsLogger:Info("/bgc settings - Open settings panel")
+    BGCommsLogger:Info("/bgc channel <name> - Set chat channel (SAY/YELL/PARTY/RAID/INSTANCE_CHAT/GUILD)")
+    BGCommsLogger:Info("/bgc inc <location> - Send incoming message")
+    BGCommsLogger:Info("/bgc clear - Send clear message")
+    BGCommsLogger:Info("/bgc smartchannel on|off - Toggle smart channel detection")
+    BGCommsLogger:Info("/bgc macro add <name> <msg> - Create macro")
+    BGCommsLogger:Info("/bgc macro remove <name> - Delete macro")
+    BGCommsLogger:Info("/bgc macro list - List macros")
+    BGCommsLogger:Info("/bgc debug - Show debug log")
+    BGCommsLogger:Info("/bgc loglevel <DEBUG|INFO|WARNING|ERROR|CRITICAL> - Set log level")
 end
 
 function BGComms:HandleChannelCommand(msg)
     local channel = msg:upper():match("%S+")
 
     if not channel or channel == "" then
-        print("|cFF00FF00Current channel: " .. BGCommsCommunications:GetChatChannel())
-        print("|cFF00FF00Usage: /bgc channel <SAY|YELL|PARTY|RAID|INSTANCE|GUILD>")
+        BGCommsLogger:Info("Current channel: " .. BGCommsCommunications:GetChatChannel())
+        BGCommsLogger:Info("Usage: /bgc channel <SAY|YELL|PARTY|RAID|INSTANCE_CHAT|GUILD>")
         return
     end
 
     -- Validate channel
     if channel ~= "SAY" and channel ~= "YELL" and channel ~= "PARTY" and channel ~= "RAID" and channel ~= "INSTANCE_CHAT" and channel ~= "GUILD" then
-        print("|cFF00FF00Invalid channel: " .. channel)
-        print("|cFF00FF00Valid channels: SAY, YELL, PARTY, RAID, INSTANCE_CHAT, GUILD")
+        BGCommsLogger:Error("Invalid channel: " .. channel)
+        BGCommsLogger:Info("Valid channels: SAY, YELL, PARTY, RAID, INSTANCE_CHAT, GUILD")
         return
     end
 
     BGCommsCommunications:SetChatChannel(channel)
     BGCommsSettingsPanel:UpdateChannelDropdown()
-    print("|cFF00FF00Channel changed to: " .. channel)
+    BGCommsLogger:Info("Channel changed to: " .. channel)
 end
 
 function BGComms:HandleSmartChannelCommand(msg)
@@ -144,14 +140,14 @@ function BGComms:HandleSmartChannelCommand(msg)
 
     if command == "on" then
         BGCommsDB.useSmartChannelDetection = true
-        print("|cFF00FF00Smart channel detection: ON")
+        BGCommsLogger:Info("Smart channel detection: ON")
     elseif command == "off" then
         BGCommsDB.useSmartChannelDetection = false
-        print("|cFF00FF00Smart channel detection: OFF")
+        BGCommsLogger:Info("Smart channel detection: OFF")
     else
         local status = BGCommsDB.useSmartChannelDetection and "ON" or "OFF"
-        print("|cFF00FF00Smart channel detection: " .. status)
-        print("|cFF00FF00Usage: /bgc smartchannel <on|off>")
+        BGCommsLogger:Info("Smart channel detection: " .. status)
+        BGCommsLogger:Info("Usage: /bgc smartchannel <on|off>")
     end
 end
 
@@ -163,33 +159,33 @@ function BGComms:HandleMacroCommand(msg)
         local remainder = string.sub(msg, 5)
         local spaceIndex = string.find(remainder, " ")
         if not spaceIndex then
-            print("|cFF00FF00Usage: /bgc macro add <name> <message>")
+            BGCommsLogger:Info("Usage: /bgc macro add <name> <message>")
             return
         end
         local macroName = string.sub(remainder, 1, spaceIndex - 1)
         local macroMessage = string.sub(remainder, spaceIndex + 1)
         BGCommsMacros:AddMacro(macroName, macroMessage)
         BGCommsUI:RefreshUI()
-        print("|cFF00FF00Macro '" .. macroName .. "' added.")
+        BGCommsLogger:Info("Macro '" .. macroName .. "' added.")
     elseif command == "rem" then
         -- /bgc macro remove <name>
         local macroName = string.sub(msg, 9)  -- Everything after "remove "
         if macroName == "" then
-            print("|cFF00FF00Usage: /bgc macro remove <name>")
+            BGCommsLogger:Info("Usage: /bgc macro remove <name>")
             return
         end
         if BGCommsMacros:RemoveMacro(macroName) then
             BGCommsUI:RefreshUI()
-            print("|cFF00FF00Macro '" .. macroName .. "' removed.")
+            BGCommsLogger:Info("Macro '" .. macroName .. "' removed.")
         else
-            print("|cFF00FF00Macro '" .. macroName .. "' not found.")
+            BGCommsLogger:Warning("Macro '" .. macroName .. "' not found.")
         end
     elseif command == "lis" then
         -- /bgc macro list
         BGCommsMacros:ListMacros()
     else
-        print("|cFF00FF00Unknown macro command: " .. command)
-        print("|cFF00FF00Usage: /bgc macro [add <name> <message>|remove <name>|list]")
+        BGCommsLogger:Error("Unknown macro command: " .. command)
+        BGCommsLogger:Info("Usage: /bgc macro [add <name> <message>|remove <name>|list]")
     end
 end
 
