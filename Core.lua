@@ -73,6 +73,10 @@ function BGComms:HandleSlashCommand(msg)
         BGCommsCommunications:SendClear()
     elseif msg == "debug" then
         BGCommsLogger:PrintHistory()
+    elseif msg == "exportlog" then
+        BGCommsLogger:ExportDebugLog()
+    elseif msg == "clearlog" then
+        BGCommsLogger:ClearDebugLog()
     elseif string.sub(msg, 1, 9) == "loglevel" then
         local levelStr = string.sub(msg, 11):upper():match("%S+")
         if levelStr then
@@ -110,8 +114,9 @@ function BGComms:PrintHelp()
     BGCommsLogger:Info("/bgc macro add <name> <msg> - Create macro")
     BGCommsLogger:Info("/bgc macro remove <name> - Delete macro")
     BGCommsLogger:Info("/bgc macro list - List macros")
-    BGCommsLogger:Info("/bgc debug - Show debug log")
     BGCommsLogger:Info("/bgc loglevel <DEBUG|INFO|WARNING|ERROR|CRITICAL> - Set log level")
+    BGCommsLogger:Info("/bgc exportlog - Export debug log (when in DEBUG mode)")
+    BGCommsLogger:Info("/bgc clearlog - Clear debug log")
 end
 
 function BGComms:HandleChannelCommand(msg)

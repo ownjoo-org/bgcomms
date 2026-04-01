@@ -2,7 +2,7 @@
 
 BGCommsLogger = {}
 
--- Log levels (higher number = more severe, only log at or above current level)
+-- Log levels (higher number = more severe, only output at or above current level)
 BGCommsLogger.DEBUG = 1
 BGCommsLogger.INFO = 2
 BGCommsLogger.WARNING = 3
@@ -22,7 +22,7 @@ BGCommsLogger.colors = {
     RESET = "|r",
 }
 
--- Store log history for later inspection
+-- Store log history for later inspection (in-memory)
 BGCommsLogger.history = {}
 BGCommsLogger.maxHistorySize = 100
 
@@ -48,13 +48,8 @@ function BGCommsLogger:GetColor(level)
     end
 end
 
--- Internal log function
+-- Internal log function - always called, filtering happens here
 function BGCommsLogger:_Log(level, message)
-    -- Only log if message level is at or above current level threshold
-    if level < self.currentLevel then
-        return
-    end
-
     local levelName = self:GetLevelName(level)
     local color = self:GetColor(level)
     local timestamp = date("%H:%M:%S")
@@ -62,7 +57,7 @@ function BGCommsLogger:_Log(level, message)
     -- Format message: [HH:MM:SS] [LEVEL] message
     local formattedMsg = string.format("%s[%s] [%s] %s%s", color, timestamp, levelName, message, self.colors.RESET)
 
-    -- Add to history
+    -- Add to in-memory history (always keep recent logs)
     table.insert(self.history, {
         level = level,
         levelName = levelName,
@@ -76,16 +71,26 @@ function BGCommsLogger:_Log(level, message)
         table.remove(self.history, 1)
     end
 
-    -- Print to chat
-    if DEFAULT_CHAT_FRAME then
-        DEFAULT_CHAT_FRAME:AddMessage(formattedMsg)
+    -- Only output to chat/console if level meets threshold
+    if level >= self.currentLevel then
+        if DEFAULT_CHAT_FRAME then
+            DEFAULT_CHAT_FRAME:AddMessage(formattedMsg)
+        end
+        print(formattedMsg)
     end
 
-    -- Also print to console
-    print(formattedMsg)
+    -- If DEBUG level, also save to SavedVariables for file export
+    if self.currentLevel == self.DEBUG then
+        BGCommsDebugLog = BGCommsDebugLog or {}
+        table.insert(BGCommsDebugLog, string.format("[%s] [%s] %s", timestamp, levelName, message))
+        -- Keep debug log reasonably sized
+        if #BGCommsDebugLog > 500 then
+            table.remove(BGCommsDebugLog, 1)
+        end
+    end
 end
 
--- Public logging functions
+-- Public logging functions - always called, filtering in _Log
 function BGCommsLogger:Debug(message)
     self:_Log(self.DEBUG, message)
 end
@@ -139,6 +144,9 @@ end
 function BGCommsLogger:SetLogLevel(level)
     self.currentLevel = level
     self:Info("Log level set to: " .. self:GetLevelName(level))
+    if level == self.DEBUG then
+        self:Info("Debug logs will be saved to SavedVariables for export")
+    end
 end
 
 -- Get log level name
@@ -156,4 +164,26 @@ function BGCommsLogger:ParseLogLevel(levelStr)
     elseif levelStr == "CRITICAL" then return self.CRITICAL
     else return self.WARNING  -- Default to WARNING if invalid
     end
+end
+
+-- Export debug log to chat for copying
+function BGCommsLogger:ExportDebugLog()
+    if not BGCommsDebugLog or #BGCommsDebugLog == 0 then
+        self:Info("No debug logs recorded yet. Enable DEBUG mode with /bgc loglevel debug")
+        return
+    end
+
+    self:Info("Debug log (" .. #BGCommsDebugLog .. " entries):")
+    for _, entry in ipairs(BGCommsDebugLog) do
+        print(entry)
+    end
+
+    self:Info("Copy the above logs and save to: <WoW>/Interface/AddOns/BattlegroundComms/bgc_debug.log")
+    self:Info("Debug logs are stored in SavedVariables and persist across sessions while DEBUG level is active")
+end
+
+-- Clear debug log
+function BGCommsLogger:ClearDebugLog()
+    BGCommsDebugLog = {}
+    self:Info("Debug log cleared")
 end
