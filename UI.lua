@@ -571,6 +571,7 @@ function BGCommsUI:ShowChannelDropdown(button)
         if button.isDropdownOpen then
             button.isDropdownOpen = false
             dropdownFrame:Hide()
+            backdrop:EnableMouse(false)
             backdrop:Hide()
         end
     end
@@ -613,6 +614,8 @@ function BGCommsUI:ShowChannelDropdown(button)
             end
             button.isDropdownOpen = false
             dropdownFrame:Hide()
+            backdrop:EnableMouse(false)
+            backdrop:Hide()
         end)
 
         -- Hover effects
