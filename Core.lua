@@ -32,8 +32,7 @@ function BGComms:Initialize()
     BGCommsDB.settingsPanelY = BGCommsDB.settingsPanelY or 0
     BGCommsDB.minimapIconX = BGCommsDB.minimapIconX or 0
     BGCommsDB.minimapIconY = BGCommsDB.minimapIconY or 0
-    BGCommsDB.ctfPanelX = BGCommsDB.ctfPanelX or 300
-    BGCommsDB.ctfPanelY = BGCommsDB.ctfPanelY or -500
+    BGCommsDB.activeFrame = BGCommsDB.activeFrame or "Main"
     BGCommsCharDB.customMacros = BGCommsCharDB.customMacros or {}
     BGCommsLogger:Debug("SavedVariables defaults set")
 

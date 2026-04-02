@@ -19,6 +19,10 @@ function BGCommsUI:ToggleLock()
 
     BGCommsDB.isLocked = not BGCommsDB.isLocked
     self:ApplyLockState()
+    -- Also apply lock state to CTF frame
+    if BGCommsCTF then
+        BGCommsCTF:ApplyLockState()
+    end
 end
 
 -- Apply lock state to frame
@@ -138,12 +142,17 @@ function BGCommsUI:CreateMinimapIcon()
         self:UnlockHighlight()
     end)
 
-    -- Click handler: left click toggles main frame, right click opens settings
+    -- Click handler: left click toggles current frame, right click opens frame menu
     button:SetScript("OnClick", function(self, clickButton)
         if clickButton == "LeftButton" then
-            BGCommsUI:ToggleFrame()
+            -- Toggle whichever frame is currently active
+            if BGCommsDB and BGCommsDB.activeFrame == "CTF" then
+                BGCommsCTF:ToggleFrame()
+            else
+                BGCommsUI:ToggleFrame()
+            end
         elseif clickButton == "RightButton" then
-            BGCommsSettingsPanel:ToggleFrame()
+            BGCommsUI:ShowFrameMenu(self)
         end
     end)
 
@@ -527,6 +536,13 @@ function BGCommsUI:Show()
     if not self.frame then
         self:CreateFrame()
     end
+    -- Hide CTF frame when showing main frame
+    if BGCommsCTF then
+        BGCommsCTF:Hide()
+    end
+    if BGCommsDB then
+        BGCommsDB.activeFrame = "Main"
+    end
     self.frame:Show()
 end
 
@@ -637,4 +653,98 @@ function BGCommsUI:ShowChannelDropdown(button)
     end
 
     dropdownFrame:Show()
+end
+
+-- Show frame selection menu on minimap icon right-click
+function BGCommsUI:ShowFrameMenu(button)
+    local frames = {"Cap/Defend", "CTF"}
+
+    -- Hide old menu if it exists
+    if BGCommsFrameMenu then
+        BGCommsFrameMenu:Hide()
+    end
+
+    -- Create dropdown frame with proper strata/level to appear on top
+    local menuFrame = CreateFrame("Frame", "BGCommsFrameMenu", UIParent)
+    menuFrame:SetFrameStrata("DIALOG")
+    menuFrame:SetFrameLevel(100)
+    menuFrame:SetSize(120, 5 + (#frames * 28))
+    menuFrame:SetPoint("TOP", button, "BOTTOM", 0, -5)
+
+    -- Background with 70% opacity
+    local bgTexture = menuFrame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetAllPoints(menuFrame)
+    bgTexture:SetColorTexture(0.1, 0.1, 0.1, 0.7)
+
+    -- Create invisible backdrop to catch clicks outside the menu
+    local backdrop = CreateFrame("Frame", nil, UIParent)
+    backdrop:SetFrameStrata("DIALOG")
+    backdrop:SetFrameLevel(99)  -- Just below menu
+    backdrop:SetAllPoints(UIParent)
+    backdrop:EnableMouse(true)
+
+    -- Close menu function
+    local closeMenu = function()
+        menuFrame:Hide()
+        backdrop:EnableMouse(false)
+        backdrop:Hide()
+    end
+
+    backdrop:SetScript("OnMouseUp", function()
+        closeMenu()
+    end)
+
+    -- Create buttons for each frame
+    for i, frameName in ipairs(frames) do
+        local btn = CreateFrame("Button", "BGFrameMenuOption" .. i, menuFrame)
+        btn:SetFrameLevel(101)  -- Above background
+        btn:SetSize(110, 24)
+        btn:SetPoint("TOPLEFT", menuFrame, "TOPLEFT", 5, -(2 + (i-1) * 28))
+
+        -- Button background texture (highlight on hover)
+        local btnBg = btn:CreateTexture(nil, "BACKGROUND")
+        btnBg:SetAllPoints(btn)
+        btnBg:SetColorTexture(0, 0, 0, 0)  -- Transparent by default
+        btn.bgTexture = btnBg
+
+        -- Button text
+        local text = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        text:SetAllPoints(btn)
+        text:SetText(frameName)
+        text:SetJustifyH("LEFT")
+        text:SetJustifyV("MIDDLE")
+
+        -- Click handler
+        btn:SetScript("OnClick", function()
+            if frameName == "Cap/Defend" then
+                BGCommsDB.activeFrame = "Main"
+                BGCommsUI:Show()
+                BGCommsCTF:Hide()
+            elseif frameName == "CTF" then
+                BGCommsDB.activeFrame = "CTF"
+                BGCommsCTF:Show()
+                BGCommsUI:Hide()
+            end
+            closeMenu()
+        end)
+
+        -- Hover effects
+        btn:SetScript("OnEnter", function(self)
+            self.bgTexture:SetColorTexture(0.2, 0.5, 1, 0.6)  -- Blue highlight
+        end)
+
+        btn:SetScript("OnLeave", function(self)
+            self.bgTexture:SetColorTexture(0, 0, 0, 0)  -- Clear
+        end)
+
+        -- Add separator line after each button except the last
+        if i < #frames then
+            local separator = menuFrame:CreateTexture(nil, "ARTWORK")
+            separator:SetSize(110, 1)
+            separator:SetPoint("TOPLEFT", menuFrame, "TOPLEFT", 5, -(2 + i * 28 - 2))
+            separator:SetColorTexture(0.5, 0.5, 0.5, 0.5)
+        end
+    end
+
+    menuFrame:Show()
 end

@@ -106,6 +106,11 @@ function BGCommsSettingsPanel:CreateFrame()
             end
         end
 
+        -- Apply opacity to CTF frame
+        if BGCommsCTF then
+            BGCommsCTF:ApplyOpacity()
+        end
+
         -- Also apply opacity to settings frame background
         if bgTexture then
             bgTexture:SetAlpha(opacity)

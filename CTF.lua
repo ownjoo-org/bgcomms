@@ -38,17 +38,21 @@ function BGCommsCTF:CreateFrame()
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", function(dragFrame)
+    frame:SetScript("OnMouseDown", function(dragFrame, button)
+        if button == "LeftButton" and (not BGCommsDB or not BGCommsDB.isLocked) then
+            dragFrame:StartMoving()
+        end
+    end)
+    frame:SetScript("OnMouseUp", function(dragFrame)
         dragFrame:StopMovingOrSizing()
-        -- Save CTF panel position as center offset from UIParent center
+        -- Save CTF frame position (same as main frame) as center offset from UIParent center
         if BGCommsDB then
             local frameCenterX = dragFrame:GetLeft() + dragFrame:GetWidth() / 2
             local frameCenterY = dragFrame:GetTop() + dragFrame:GetHeight() / 2
             local uiCenterX = UIParent:GetLeft() + UIParent:GetWidth() / 2
             local uiCenterY = UIParent:GetTop() + UIParent:GetHeight() / 2
-            BGCommsDB.ctfPanelX = frameCenterX - uiCenterX
-            BGCommsDB.ctfPanelY = frameCenterY - uiCenterY
+            BGCommsDB.windowX = math.floor(frameCenterX - uiCenterX + 0.5)
+            BGCommsDB.windowY = math.floor(frameCenterY - uiCenterY + 872 + 0.5)
         end
     end)
     frame:Hide()
@@ -214,6 +218,13 @@ end
 function BGCommsCTF:Show()
     if not self.frame then
         self:CreateFrame()
+    end
+    -- Hide main frame when showing CTF frame
+    if BGCommsUI then
+        BGCommsUI:Hide()
+    end
+    if BGCommsDB then
+        BGCommsDB.activeFrame = "CTF"
     end
     self.frame:Show()
 end
