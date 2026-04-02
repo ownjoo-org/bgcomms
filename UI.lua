@@ -414,10 +414,14 @@ function BGCommsUI:CreateFrame()
     self.channelDropdown = channelDropdown
     BGCommsLogger:Debug("CreateFrame: Channel dropdown created")
 
-    -- CLEAR button (below priority buttons) - solid green, no border
+    -- CLEAR/INC buttons (centered below priority buttons)
+    -- Total width: 60 + 3 gap + 60 = 123px
+    -- Center offset: (256 - 123) / 2 = 66.5px from left margin
+    local clearINCStartX = contentMargin + 66
+
     local clearButton = CreateFrame("Button", "BGClearButton", frame)
     clearButton:SetSize(60, 22)
-    clearButton:SetPoint("TOPLEFT", frame, "TOPLEFT", contentMargin, -78)
+    clearButton:SetPoint("TOPLEFT", frame, "TOPLEFT", clearINCStartX, -78)
 
     -- Create solid green background (no template border)
     local clearBg = clearButton:CreateTexture(nil, "BACKGROUND")

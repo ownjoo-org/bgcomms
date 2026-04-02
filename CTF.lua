@@ -85,19 +85,23 @@ function BGCommsCTF:CreateFrame()
 
     -- OFFENSE SECTION (centered with padding)
     local offenseLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    offenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -45)
+    offenseLabel:SetPoint("TOP", frame, "TOP", 0, -45)
     offenseLabel:SetText("OFFENSE: Their FC")
 
+    -- Center offense buttons: 3 × 70px + 2 gaps × 8px = 226px, centered in 256px
+    local offenseStartX = 12 + (256 - 226) / 2
+
     local offenseButtons = {
-        {label = "West", direction = "WEST", x = 10},
-        {label = "Mid", direction = "MID", x = 95},
-        {label = "East", direction = "EAST", x = 175}
+        {label = "West", direction = "WEST", index = 1},
+        {label = "Mid", direction = "MID", index = 2},
+        {label = "East", direction = "EAST", index = 3}
     }
 
     for i, btnConfig in ipairs(offenseButtons) do
         local btn = CreateFrame("Button", "BGCTFOffense" .. i, frame)
         btn:SetSize(70, 22)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -62)
+        local btnX = offenseStartX + (btnConfig.index - 1) * 78  -- 70px button + 8px gap
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnX, -62)
 
         -- Red background for offense buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
@@ -127,19 +131,23 @@ function BGCommsCTF:CreateFrame()
 
     -- DEFENSE SECTION (with padding after h-rule)
     local defenseLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    defenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -102)
+    defenseLabel:SetPoint("TOP", frame, "TOP", 0, -102)
     defenseLabel:SetText("DEFENSE: Our FC")
 
+    -- Center defense buttons: same as offense (3 × 70px + 2 gaps × 8px = 226px)
+    local defenseStartX = 12 + (256 - 226) / 2
+
     local defenseButtons = {
-        {label = "West", direction = "WEST", x = 10},
-        {label = "Mid", direction = "MID", x = 95},
-        {label = "East", direction = "EAST", x = 175}
+        {label = "West", direction = "WEST", index = 1},
+        {label = "Mid", direction = "MID", index = 2},
+        {label = "East", direction = "EAST", index = 3}
     }
 
     for i, btnConfig in ipairs(defenseButtons) do
         local btn = CreateFrame("Button", "BGCTFDefense" .. i, frame)
         btn:SetSize(70, 22)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -119)
+        local btnX = defenseStartX + (btnConfig.index - 1) * 78  -- 70px button + 8px gap
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnX, -119)
 
         -- Blue background for defense buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
@@ -162,15 +170,19 @@ function BGCommsCTF:CreateFrame()
     end
 
     -- Defense action buttons (below defense directions with spacing)
+    -- Center action buttons: 2 × 100px + 8px gap = 208px, centered in 256px
+    local actionStartX = 12 + (256 - 208) / 2
+
     local defenseActionButtons = {
-        {label = "INC Flag Room", action = "FLAG_ROOM", x = 10},
-        {label = "FC Needs HELP", action = "NEEDS_HELP", x = 135}
+        {label = "INC Flag Room", action = "FLAG_ROOM", index = 1},
+        {label = "FC Needs HELP", action = "NEEDS_HELP", index = 2}
     }
 
     for i, btnConfig in ipairs(defenseActionButtons) do
         local btn = CreateFrame("Button", "BGCTFDefenseAction" .. i, frame)
         btn:SetSize(100, 22)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -144)
+        local btnX = actionStartX + (btnConfig.index - 1) * 108  -- 100px button + 8px gap
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnX, -144)
 
         -- Green background for action buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
