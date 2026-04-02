@@ -142,17 +142,23 @@ function BGCommsUI:CreateMinimapIcon()
         self:UnlockHighlight()
     end)
 
-    -- Click handler: left click toggles current frame, right click opens frame menu
+    -- Click handler: left click cycles frames, right click opens settings
     button:SetScript("OnClick", function(self, clickButton)
         if clickButton == "LeftButton" then
-            -- Toggle whichever frame is currently active
+            -- Cycle between Cap/Defend and CTF frames
             if BGCommsDB and BGCommsDB.activeFrame == "CTF" then
-                BGCommsCTF:ToggleFrame()
+                -- Switch to Cap/Defend
+                BGCommsDB.activeFrame = "Main"
+                BGCommsUI:Show()
+                BGCommsCTF:Hide()
             else
-                BGCommsUI:ToggleFrame()
+                -- Switch to CTF
+                BGCommsDB.activeFrame = "CTF"
+                BGCommsCTF:Show()
+                BGCommsUI:Hide()
             end
         elseif clickButton == "RightButton" then
-            BGCommsUI:ShowFrameMenu(self)
+            BGCommsSettingsPanel:ToggleFrame()
         end
     end)
 
