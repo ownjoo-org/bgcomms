@@ -657,7 +657,7 @@ end
 
 -- Show frame selection menu on minimap icon right-click
 function BGCommsUI:ShowFrameMenu(button)
-    local frames = {"Cap/Defend", "CTF"}
+    local frames = {"Cap/Defend", "CTF", "Settings"}
 
     -- Hide old menu if it exists
     if BGCommsFrameMenu then
@@ -668,7 +668,7 @@ function BGCommsUI:ShowFrameMenu(button)
     local menuFrame = CreateFrame("Frame", "BGCommsFrameMenu", UIParent)
     menuFrame:SetFrameStrata("DIALOG")
     menuFrame:SetFrameLevel(100)
-    menuFrame:SetSize(120, 5 + (#frames * 28))
+    menuFrame:SetSize(130, 5 + (#frames * 28))
     menuFrame:SetPoint("TOP", button, "BOTTOM", 0, -5)
 
     -- Background with 70% opacity
@@ -698,7 +698,7 @@ function BGCommsUI:ShowFrameMenu(button)
     for i, frameName in ipairs(frames) do
         local btn = CreateFrame("Button", "BGFrameMenuOption" .. i, menuFrame)
         btn:SetFrameLevel(101)  -- Above background
-        btn:SetSize(110, 24)
+        btn:SetSize(120, 24)
         btn:SetPoint("TOPLEFT", menuFrame, "TOPLEFT", 5, -(2 + (i-1) * 28))
 
         -- Button background texture (highlight on hover)
@@ -724,6 +724,8 @@ function BGCommsUI:ShowFrameMenu(button)
                 BGCommsDB.activeFrame = "CTF"
                 BGCommsCTF:Show()
                 BGCommsUI:Hide()
+            elseif frameName == "Settings" then
+                BGCommsSettingsPanel:ToggleFrame()
             end
             closeMenu()
         end)
@@ -740,7 +742,7 @@ function BGCommsUI:ShowFrameMenu(button)
         -- Add separator line after each button except the last
         if i < #frames then
             local separator = menuFrame:CreateTexture(nil, "ARTWORK")
-            separator:SetSize(110, 1)
+            separator:SetSize(120, 1)
             separator:SetPoint("TOPLEFT", menuFrame, "TOPLEFT", 5, -(2 + i * 28 - 2))
             separator:SetColorTexture(0.5, 0.5, 0.5, 0.5)
         end
