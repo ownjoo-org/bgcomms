@@ -12,7 +12,7 @@ function BGCommsCTF:CreateFrame()
 
     -- Create CTF frame
     local frame = CreateFrame("Frame", "BGCommsCTFFrame", UIParent)
-    frame:SetSize(310, 125)
+    frame:SetSize(280, 160)
     BGCommsLogger:Debug("CTF CreateFrame: Frame object created, size set to 310x125")
 
     -- Restore position from SavedVariables or use defaults
@@ -48,32 +48,62 @@ function BGCommsCTF:CreateFrame()
     end)
     frame:Hide()
 
-    -- Title
-    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOP", frame, "TOP", 0, -8)
-    title:SetText("CTF")
+    -- Channel dropdown (centered, like main frame)
+    local channelDropdown = CreateFrame("Button", "BGCTFChannelDropdown", frame)
+    channelDropdown:SetSize(130, 22)
+    channelDropdown:SetPoint("TOP", frame, "TOP", 0, -10)
 
-    local contentMargin = 10
-    local buttonHeight = 25
+    -- Create black background
+    local channelBg = channelDropdown:CreateTexture(nil, "BACKGROUND")
+    channelBg:SetAllPoints(channelDropdown)
+    channelBg:SetColorTexture(0, 0, 0, 1)  -- Black background
 
-    -- Row 1: Flag Status Buttons (Secure, Taken, Dropped)
-    local flagButtons = {
-        {label = "Secure", status = "SECURE", x = contentMargin},
-        {label = "Taken", status = "TAKEN", x = contentMargin + 105},
-        {label = "Dropped", status = "DROPPED", x = contentMargin + 210}
+    -- Create text
+    local channelText = channelDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    channelText:SetAllPoints(channelDropdown)
+    channelText:SetText(BGCommsCommunications:GetChatChannel())
+    channelText:SetTextColor(1, 1, 0)  -- Yellow
+    channelText:SetJustifyH("CENTER")
+    channelText:SetJustifyV("MIDDLE")
+
+    channelDropdown.channelText = channelText
+    channelDropdown.isDropdownOpen = false
+    channelDropdown:EnableMouse(true)
+    channelDropdown:SetScript("OnClick", function(self)
+        if self.isDropdownOpen then
+            if BGCommsChannelDropdownMenu then
+                BGCommsChannelDropdownMenu:Hide()
+            end
+            self.isDropdownOpen = false
+        else
+            BGCommsUI:ShowChannelDropdown(self)
+            self.isDropdownOpen = true
+        end
+    end)
+
+    self.channelDropdown = channelDropdown
+
+    -- OFFENSE SECTION
+    local offenseLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    offenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -40)
+    offenseLabel:SetText("OFFENSE: Their FC")
+
+    local offenseButtons = {
+        {label = "West", direction = "WEST", x = 10},
+        {label = "Mid", direction = "MID", x = 95},
+        {label = "East", direction = "EAST", x = 175}
     }
 
-    for i, btnConfig in ipairs(flagButtons) do
-        local btn = CreateFrame("Button", "BGCTFFlag" .. i, frame)
-        btn:SetSize(90, buttonHeight)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -30)
+    for i, btnConfig in ipairs(offenseButtons) do
+        local btn = CreateFrame("Button", "BGCTFOffense" .. i, frame)
+        btn:SetSize(70, 22)
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -57)
 
-        -- Blue background for flag buttons
+        -- Red background for offense buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
         btnBg:SetAllPoints(btn)
-        btnBg:SetColorTexture(0.2, 0.2, 0.8, 1)
+        btnBg:SetColorTexture(0.8, 0.2, 0.2, 1)
 
-        -- Button text
         local btnText = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         btnText:SetAllPoints(btn)
         btnText:SetText(btnConfig.label)
@@ -83,31 +113,70 @@ function BGCommsCTF:CreateFrame()
 
         btn:EnableMouse(true)
         btn:SetScript("OnClick", function()
-            local location = BGCommsLocations:GetPlayerLocation()
-            BGCommsCommunications:SendFlagStatus(btnConfig.status, location)
+            BGCommsCommunications:SendFCRunning("THEIR", btnConfig.direction)
         end)
 
         table.insert(self.ctfButtons, btn)
     end
 
-    -- Row 2: Base Defense Buttons (Defended, Clear, Under Attack)
-    local baseButtons = {
-        {label = "Defended", status = "DEFENDED", x = contentMargin},
-        {label = "Clear", status = "CLEAR", x = contentMargin + 105},
-        {label = "Under Attack", status = "UNDER_ATTACK", x = contentMargin + 210}
+    -- Horizontal separator
+    local separator = frame:CreateTexture(nil, "ARTWORK")
+    separator:SetSize(256, 1)
+    separator:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -80)
+    separator:SetColorTexture(0.5, 0.5, 0.5, 1)
+
+    -- DEFENSE SECTION
+    local defenseLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    defenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -88)
+    defenseLabel:SetText("DEFENSE: Our FC")
+
+    local defenseButtons = {
+        {label = "West", direction = "WEST", x = 10},
+        {label = "Mid", direction = "MID", x = 95},
+        {label = "East", direction = "EAST", x = 175}
     }
 
-    for i, btnConfig in ipairs(baseButtons) do
-        local btn = CreateFrame("Button", "BGCTFBase" .. i, frame)
-        btn:SetSize(90, buttonHeight)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -60)
+    for i, btnConfig in ipairs(defenseButtons) do
+        local btn = CreateFrame("Button", "BGCTFDefense" .. i, frame)
+        btn:SetSize(70, 22)
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -105)
 
-        -- Green background for base defense buttons
+        -- Blue background for defense buttons
+        local btnBg = btn:CreateTexture(nil, "BACKGROUND")
+        btnBg:SetAllPoints(btn)
+        btnBg:SetColorTexture(0.2, 0.2, 0.8, 1)
+
+        local btnText = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        btnText:SetAllPoints(btn)
+        btnText:SetText(btnConfig.label)
+        btnText:SetJustifyH("CENTER")
+        btnText:SetJustifyV("MIDDLE")
+        btnText:SetTextColor(1, 1, 1)
+
+        btn:EnableMouse(true)
+        btn:SetScript("OnClick", function()
+            BGCommsCommunications:SendFCRunning("OUR", btnConfig.direction)
+        end)
+
+        table.insert(self.ctfButtons, btn)
+    end
+
+    -- Defense action buttons
+    local defenseActionButtons = {
+        {label = "INC Flag Room", action = "FLAG_ROOM", x = 10},
+        {label = "FC Needs HELP", action = "NEEDS_HELP", x = 130}
+    }
+
+    for i, btnConfig in ipairs(defenseActionButtons) do
+        local btn = CreateFrame("Button", "BGCTFDefenseAction" .. i, frame)
+        btn:SetSize(100, 22)
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -130)
+
+        -- Green background for action buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
         btnBg:SetAllPoints(btn)
         btnBg:SetColorTexture(0.2, 0.8, 0.2, 1)
 
-        -- Button text
         local btnText = btn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         btnText:SetAllPoints(btn)
         btnText:SetText(btnConfig.label)
@@ -117,37 +186,15 @@ function BGCommsCTF:CreateFrame()
 
         btn:EnableMouse(true)
         btn:SetScript("OnClick", function()
-            BGCommsCommunications:SendBaseStatus(btnConfig.status)
+            if btnConfig.action == "FLAG_ROOM" then
+                BGCommsCommunications:SendINCFlagRoom()
+            elseif btnConfig.action == "NEEDS_HELP" then
+                BGCommsCommunications:SendFCNeedsHelp()
+            end
         end)
 
         table.insert(self.ctfButtons, btn)
     end
-
-    -- Row 3: Flag Carrier Button
-    local carrierBtn = CreateFrame("Button", "BGCTFCarrier", frame)
-    carrierBtn:SetSize(90, buttonHeight)
-    carrierBtn:SetPoint("TOPLEFT", frame, "TOPLEFT", contentMargin, -90)
-
-    -- Red background for flag carrier button
-    local carrierBg = carrierBtn:CreateTexture(nil, "BACKGROUND")
-    carrierBg:SetAllPoints(carrierBtn)
-    carrierBg:SetColorTexture(0.8, 0.2, 0.2, 1)
-
-    -- Button text
-    local carrierText = carrierBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    carrierText:SetAllPoints(carrierBtn)
-    carrierText:SetText("Flag Carrier")
-    carrierText:SetJustifyH("CENTER")
-    carrierText:SetJustifyV("MIDDLE")
-    carrierText:SetTextColor(1, 1, 1)
-
-    carrierBtn:EnableMouse(true)
-    carrierBtn:SetScript("OnClick", function()
-        local location = BGCommsLocations:GetPlayerLocation()
-        BGCommsCommunications:SendFlagCarrier(location)
-    end)
-
-    table.insert(self.ctfButtons, carrierBtn)
 
     self.frame = frame
     self:ApplyLockState()

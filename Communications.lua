@@ -150,6 +150,39 @@ function BGCommsCommunications:SendFlagCarrier(location)
     self:SendMessage(message)
 end
 
+function BGCommsCommunications:SendFCRunning(team, direction)
+    -- Format FC running direction message
+    -- team: "THEIR" or "OUR"
+    -- direction: "WEST", "MID", "EAST"
+    local directionText = ""
+    if direction == "WEST" then
+        directionText = "WEST"
+    elseif direction == "MID" then
+        directionText = "MID"
+    elseif direction == "EAST" then
+        directionText = "EAST"
+    else
+        directionText = tostring(direction)
+    end
+
+    local teamText = team:upper()
+    local message = "{cross}{cross} " .. teamText .. " FC RUNNING " .. directionText
+
+    self:SendMessage(message)
+end
+
+function BGCommsCommunications:SendINCFlagRoom()
+    -- Format INC flag room message
+    local message = "{diamond}{diamond} INC FLAG ROOM"
+    self:SendMessage(message)
+end
+
+function BGCommsCommunications:SendFCNeedsHelp()
+    -- Format FC needs help message
+    local message = "{cross}{cross} FC NEEDS HELP"
+    self:SendMessage(message)
+end
+
 function BGCommsCommunications:SendMessage(message)
     if not message then return end
 

@@ -302,9 +302,9 @@ function BGCommsUI:CreateFrame()
         local priorityButton = CreateFrame("Button", "BGPriorityButton" .. i, frame)
         priorityButton:SetSize(25, 22)
 
-        -- Position buttons in a row with calculated spacing
+        -- Position buttons in a row with calculated spacing (below channel dropdown)
         if i == 1 then
-            priorityButton:SetPoint("TOPLEFT", frame, "TOPLEFT", priorityStartX, -12)
+            priorityButton:SetPoint("TOPLEFT", frame, "TOPLEFT", priorityStartX, -40)
         else
             priorityButton:SetPoint("LEFT", self.priorityButtons[i-1], "RIGHT", gapSize, 0)
         end
@@ -361,36 +361,15 @@ function BGCommsUI:CreateFrame()
     self.priorityButtons[1].textString:SetTextColor(0, 0, 0)  -- Black
     BGCommsLogger:Debug("CreateFrame: Priority buttons created")
 
-    -- Channel dropdown button (wider to fit INSTANCE) - centered
+    -- Channel dropdown button (centered at top) - moved to top of frame
     local channelDropdown = CreateFrame("Button", "BGCommsChannelDropdown", frame)
     channelDropdown:SetSize(130, 22)
-    channelDropdown:SetPoint("TOPLEFT", frame, "TOPLEFT", contentMargin, -40)
+    channelDropdown:SetPoint("TOP", frame, "TOP", 0, -10)
 
     -- Create black background
     local channelBg = channelDropdown:CreateTexture(nil, "BACKGROUND")
     channelBg:SetAllPoints(channelDropdown)
     channelBg:SetColorTexture(0, 0, 0, 1)  -- Black background
-
-    -- Create gray border outline (1px edges)
-    local channelBorderTop = channelDropdown:CreateTexture(nil, "BORDER")
-    channelBorderTop:SetSize(130, 1)
-    channelBorderTop:SetPoint("TOPLEFT", channelDropdown, "TOPLEFT", 0, 0)
-    channelBorderTop:SetColorTexture(0.5, 0.5, 0.5, 1)
-
-    local channelBorderBottom = channelDropdown:CreateTexture(nil, "BORDER")
-    channelBorderBottom:SetSize(130, 1)
-    channelBorderBottom:SetPoint("BOTTOMLEFT", channelDropdown, "BOTTOMLEFT", 0, 0)
-    channelBorderBottom:SetColorTexture(0.5, 0.5, 0.5, 1)
-
-    local channelBorderLeft = channelDropdown:CreateTexture(nil, "BORDER")
-    channelBorderLeft:SetSize(1, 22)
-    channelBorderLeft:SetPoint("TOPLEFT", channelDropdown, "TOPLEFT", 0, 0)
-    channelBorderLeft:SetColorTexture(0.5, 0.5, 0.5, 1)
-
-    local channelBorderRight = channelDropdown:CreateTexture(nil, "BORDER")
-    channelBorderRight:SetSize(1, 22)
-    channelBorderRight:SetPoint("TOPRIGHT", channelDropdown, "TOPRIGHT", 0, 0)
-    channelBorderRight:SetColorTexture(0.5, 0.5, 0.5, 1)
 
     -- Create text with yellow color
     local channelText = channelDropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -422,10 +401,10 @@ function BGCommsUI:CreateFrame()
     self.channelDropdown = channelDropdown
     BGCommsLogger:Debug("CreateFrame: Channel dropdown created")
 
-    -- CLEAR button (to the right of channel dropdown) - solid green, no border
+    -- CLEAR button (below priority buttons) - solid green, no border
     local clearButton = CreateFrame("Button", "BGClearButton", frame)
     clearButton:SetSize(60, 22)
-    clearButton:SetPoint("LEFT", channelDropdown, "RIGHT", 3, 0)
+    clearButton:SetPoint("TOPLEFT", frame, "TOPLEFT", contentMargin, -65)
 
     -- Create solid green background (no template border)
     local clearBg = clearButton:CreateTexture(nil, "BACKGROUND")
