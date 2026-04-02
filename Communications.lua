@@ -97,6 +97,59 @@ function BGCommsCommunications:SendIncoming(location)
     self:SendMessage(message)
 end
 
+function BGCommsCommunications:SendFlagStatus(status, location)
+    -- Format flag status messages with diamond icons
+    local statusText = ""
+    if status == "SECURE" then
+        statusText = "FLAG SECURE"
+    elseif status == "TAKEN" then
+        statusText = "FLAG TAKEN"
+    elseif status == "DROPPED" then
+        statusText = "FLAG DROPPED"
+    else
+        statusText = "FLAG " .. tostring(status)
+    end
+
+    local message
+    if location and location ~= "" then
+        message = "{diamond}{diamond} " .. statusText .. " : " .. location
+    else
+        message = "{diamond}{diamond} " .. statusText
+    end
+
+    self:SendMessage(message)
+end
+
+function BGCommsCommunications:SendBaseStatus(status)
+    -- Format base defense messages with triangle icons
+    local statusText = ""
+    if status == "DEFENDED" then
+        statusText = "BASE DEFENDED"
+    elseif status == "CLEAR" then
+        statusText = "BASE CLEAR"
+    elseif status == "UNDER_ATTACK" then
+        statusText = "BASE UNDER ATTACK"
+    else
+        statusText = "BASE " .. tostring(status)
+    end
+
+    local message = "{triangle}{triangle} " .. statusText
+
+    self:SendMessage(message)
+end
+
+function BGCommsCommunications:SendFlagCarrier(location)
+    -- Format flag carrier location message with cross icons
+    local message
+    if location and location ~= "" then
+        message = "{cross}{cross} CARRIER AT : " .. location
+    else
+        message = "{cross}{cross} CARRIER"
+    end
+
+    self:SendMessage(message)
+end
+
 function BGCommsCommunications:SendMessage(message)
     if not message then return end
 

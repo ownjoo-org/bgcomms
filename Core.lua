@@ -32,6 +32,8 @@ function BGComms:Initialize()
     BGCommsDB.settingsPanelY = BGCommsDB.settingsPanelY or 0
     BGCommsDB.minimapIconX = BGCommsDB.minimapIconX or 0
     BGCommsDB.minimapIconY = BGCommsDB.minimapIconY or 0
+    BGCommsDB.ctfPanelX = BGCommsDB.ctfPanelX or 300
+    BGCommsDB.ctfPanelY = BGCommsDB.ctfPanelY or -500
     BGCommsCharDB.customMacros = BGCommsCharDB.customMacros or {}
     BGCommsLogger:Debug("SavedVariables defaults set")
 
@@ -84,6 +86,8 @@ function BGComms:HandleSlashCommand(msg)
         BGCommsUI:Show()
     elseif msg == "settings" or msg == "config" then
         BGCommsSettingsPanel:ToggleFrame()
+    elseif msg == "ctf" then
+        BGCommsCTF:ToggleFrame()
     elseif msg == "clear" then
         BGCommsCommunications:SendClear()
     elseif msg == "debug" then
@@ -122,6 +126,7 @@ function BGComms:PrintHelp()
     BGCommsLogger:Info("/bgc show - Show main window")
     BGCommsLogger:Info("/bgc hide - Hide main window")
     BGCommsLogger:Info("/bgc settings - Open settings panel")
+    BGCommsLogger:Info("/bgc ctf - Toggle CTF frame")
     BGCommsLogger:Info("/bgc channel <name> - Set chat channel (SAY/YELL/PARTY/RAID/INSTANCE_CHAT/GUILD)")
     BGCommsLogger:Info("/bgc inc <location> - Send incoming message")
     BGCommsLogger:Info("/bgc clear - Send clear message")
