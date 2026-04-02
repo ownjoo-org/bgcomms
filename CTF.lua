@@ -16,18 +16,9 @@ function BGCommsCTF:CreateFrame()
     BGCommsLogger:Debug("CTF CreateFrame: Frame object created, size set to 310x125")
 
     -- Restore position from SavedVariables or use defaults
-    local posX = 0
-    local posY = 0
-    if BGCommsDB and BGCommsDB.ctfPanelX then
-        if math.abs(BGCommsDB.ctfPanelX) < 500 then
-            posX = BGCommsDB.ctfPanelX
-        end
-    end
-    if BGCommsDB and BGCommsDB.ctfPanelY then
-        if math.abs(BGCommsDB.ctfPanelY) < 500 then
-            posY = BGCommsDB.ctfPanelY
-        end
-    end
+    -- Use same windowX/windowY as main frame for shared positioning
+    local posX = BGCommsDB and BGCommsDB.windowX or 0
+    local posY = BGCommsDB and BGCommsDB.windowY or -800
     frame:SetPoint("CENTER", UIParent, "CENTER", posX, posY)
 
     -- Create background texture
