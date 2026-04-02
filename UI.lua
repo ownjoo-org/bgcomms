@@ -193,20 +193,19 @@ function BGCommsUI:CreateMacroButtons(parentFrame, startY)
 
     local macros = BGCommsMacros:GetMacros()
     local buttonIndex = 1
+    local contentMargin = 12
 
     for macroName, _ in pairs(macros) do
         local macroButton = CreateFrame("Button", "BGMacroButton" .. buttonIndex, parentFrame, "GameMenuButtonTemplate")
         macroButton:SetSize(80, 25)
 
-        -- Position buttons in two columns
+        -- Position buttons in two columns, centered
         local column = (buttonIndex - 1) % 2
         local row = math.floor((buttonIndex - 1) / 2)
 
-        if column == 0 then
-            macroButton:SetPoint("TOPLEFT", parentFrame, "TOPLEFT", 10, startY - (row * 30))
-        else
-            macroButton:SetPoint("LEFT", parentFrame, "TOPLEFT", 100, startY - (row * 30))
-        end
+        local buttonXOffset = contentMargin + (column * 94)  -- 80px button + 14px gap
+
+        macroButton:SetPoint("TOPLEFT", parentFrame, "TOPLEFT", buttonXOffset, startY - (row * 30))
 
         macroButton:SetText(macroName:sub(1, 8))  -- Limit text to 8 chars
         macroButton:SetScript("OnClick", function()
@@ -217,10 +216,14 @@ function BGCommsUI:CreateMacroButtons(parentFrame, startY)
         buttonIndex = buttonIndex + 1
     end
 
-    -- Adjust frame height if needed
+    -- Adjust frame height if needed for macro buttons
     local totalRows = math.ceil(#self.macroButtons / 2)
+    local baseHeight = 140  -- Base height without macros
     if totalRows > 0 then
-        parentFrame:SetHeight(100 + (totalRows * 30))
+        -- Each row is 30px, plus 20px margin at bottom
+        parentFrame:SetHeight(baseHeight + (totalRows * 30) + 20)
+    else
+        parentFrame:SetHeight(baseHeight)
     end
 end
 
@@ -229,12 +232,12 @@ function BGCommsUI:CreateFrame()
 
     BGCommsLogger:Debug("CreateFrame: Starting main frame creation")
 
-    -- Create main frame - sized to fit content with minimal margins
+    -- Create main frame - sized to fit content with even margins
     local frame = CreateFrame("Frame", "BGCommsFrame", UIParent)
     BGCommsLogger:Debug("CreateFrame: Frame object created")
     -- Frame width: 256px content + 24px margins = 280px
-    -- Height: minimal to fit controls with minimal bottom margin
-    local frameHeight = 75
+    -- Height: calculated to fit all controls with proper spacing, adjusted for macros
+    local frameHeight = 140  -- Base height for fixed elements
     frame:SetSize(280, frameHeight)
     BGCommsLogger:Debug("CreateFrame: Frame size set to 280x" .. tostring(frameHeight))
 
@@ -314,7 +317,7 @@ function BGCommsUI:CreateFrame()
 
         -- Position buttons in a row with calculated spacing (below channel dropdown)
         if i == 1 then
-            priorityButton:SetPoint("TOPLEFT", frame, "TOPLEFT", priorityStartX, -40)
+            priorityButton:SetPoint("TOPLEFT", frame, "TOPLEFT", priorityStartX, -45)
         else
             priorityButton:SetPoint("LEFT", self.priorityButtons[i-1], "RIGHT", gapSize, 0)
         end
@@ -414,7 +417,7 @@ function BGCommsUI:CreateFrame()
     -- CLEAR button (below priority buttons) - solid green, no border
     local clearButton = CreateFrame("Button", "BGClearButton", frame)
     clearButton:SetSize(60, 22)
-    clearButton:SetPoint("TOPLEFT", frame, "TOPLEFT", contentMargin, -65)
+    clearButton:SetPoint("TOPLEFT", frame, "TOPLEFT", contentMargin, -78)
 
     -- Create solid green background (no template border)
     local clearBg = clearButton:CreateTexture(nil, "BACKGROUND")
@@ -460,9 +463,9 @@ function BGCommsUI:CreateFrame()
     self.clearButton = clearButton
     self.incButton = incButton
 
-    -- Create macro buttons (starting below CLEAR/INC buttons)
+    -- Create macro buttons (starting below CLEAR/INC buttons with spacing)
     BGCommsLogger:Debug("CreateFrame: Creating macro buttons")
-    self:CreateMacroButtons(frame, -65)
+    self:CreateMacroButtons(frame, -100)
     BGCommsLogger:Debug("CreateFrame: Macro buttons created")
 
     -- Create minimap icon

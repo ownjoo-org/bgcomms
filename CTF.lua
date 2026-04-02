@@ -12,7 +12,7 @@ function BGCommsCTF:CreateFrame()
 
     -- Create CTF frame
     local frame = CreateFrame("Frame", "BGCommsCTFFrame", UIParent)
-    frame:SetSize(280, 160)
+    frame:SetSize(280, 180)
     BGCommsLogger:Debug("CTF CreateFrame: Frame object created, size set to 310x125")
 
     -- Restore position from SavedVariables or use defaults
@@ -83,9 +83,9 @@ function BGCommsCTF:CreateFrame()
 
     self.channelDropdown = channelDropdown
 
-    -- OFFENSE SECTION
+    -- OFFENSE SECTION (centered with padding)
     local offenseLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    offenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -40)
+    offenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -45)
     offenseLabel:SetText("OFFENSE: Their FC")
 
     local offenseButtons = {
@@ -97,7 +97,7 @@ function BGCommsCTF:CreateFrame()
     for i, btnConfig in ipairs(offenseButtons) do
         local btn = CreateFrame("Button", "BGCTFOffense" .. i, frame)
         btn:SetSize(70, 22)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -57)
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -62)
 
         -- Red background for offense buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
@@ -119,15 +119,15 @@ function BGCommsCTF:CreateFrame()
         table.insert(self.ctfButtons, btn)
     end
 
-    -- Horizontal separator
+    -- Horizontal separator (with padding above and below)
     local separator = frame:CreateTexture(nil, "ARTWORK")
     separator:SetSize(256, 1)
-    separator:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -80)
+    separator:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -92)
     separator:SetColorTexture(0.5, 0.5, 0.5, 1)
 
-    -- DEFENSE SECTION
+    -- DEFENSE SECTION (with padding after h-rule)
     local defenseLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    defenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -88)
+    defenseLabel:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -102)
     defenseLabel:SetText("DEFENSE: Our FC")
 
     local defenseButtons = {
@@ -139,7 +139,7 @@ function BGCommsCTF:CreateFrame()
     for i, btnConfig in ipairs(defenseButtons) do
         local btn = CreateFrame("Button", "BGCTFDefense" .. i, frame)
         btn:SetSize(70, 22)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -105)
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -119)
 
         -- Blue background for defense buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
@@ -161,16 +161,16 @@ function BGCommsCTF:CreateFrame()
         table.insert(self.ctfButtons, btn)
     end
 
-    -- Defense action buttons
+    -- Defense action buttons (below defense directions with spacing)
     local defenseActionButtons = {
         {label = "INC Flag Room", action = "FLAG_ROOM", x = 10},
-        {label = "FC Needs HELP", action = "NEEDS_HELP", x = 130}
+        {label = "FC Needs HELP", action = "NEEDS_HELP", x = 135}
     }
 
     for i, btnConfig in ipairs(defenseActionButtons) do
         local btn = CreateFrame("Button", "BGCTFDefenseAction" .. i, frame)
         btn:SetSize(100, 22)
-        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -130)
+        btn:SetPoint("TOPLEFT", frame, "TOPLEFT", btnConfig.x, -144)
 
         -- Green background for action buttons
         local btnBg = btn:CreateTexture(nil, "BACKGROUND")
