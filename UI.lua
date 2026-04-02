@@ -142,20 +142,24 @@ function BGCommsUI:CreateMinimapIcon()
         self:UnlockHighlight()
     end)
 
-    -- Click handler: left click cycles frames, right click opens settings
+    -- Click handler: left click opens/closes frames, right click opens settings
     button:SetScript("OnClick", function(self, clickButton)
         if clickButton == "LeftButton" then
-            -- Cycle between Cap/Defend and CTF frames
-            if BGCommsDB and BGCommsDB.activeFrame == "CTF" then
-                -- Switch to Cap/Defend
-                BGCommsDB.activeFrame = "Main"
-                BGCommsUI:Show()
-                BGCommsCTF:Hide()
+            -- Check if any frame is open
+            local mainFrameOpen = BGCommsUI.frame and BGCommsUI.frame:IsShown()
+            local ctfFrameOpen = BGCommsCTF.frame and BGCommsCTF.frame:IsShown()
+
+            if mainFrameOpen or ctfFrameOpen then
+                -- Close open frame
+                if mainFrameOpen then
+                    BGCommsUI:Hide()
+                end
+                if ctfFrameOpen then
+                    BGCommsCTF:Hide()
+                end
             else
-                -- Switch to CTF
-                BGCommsDB.activeFrame = "CTF"
-                BGCommsCTF:Show()
-                BGCommsUI:Hide()
+                -- Show frame selection dropdown
+                BGCommsUI:ShowFrameSelectionMenu(self)
             end
         elseif clickButton == "RightButton" then
             BGCommsSettingsPanel:ToggleFrame()
@@ -166,7 +170,7 @@ function BGCommsUI:CreateMinimapIcon()
     button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetText("BG Comms", 1, 1, 1)
-        GameTooltip:AddLine("Left-click to toggle main window", 0.7, 0.7, 0.7)
+        GameTooltip:AddLine("Left-click: open frame or close", 0.7, 0.7, 0.7)
         GameTooltip:AddLine("Right-click to open settings", 0.7, 0.7, 0.7)
         GameTooltip:AddLine("Drag to reposition", 0.7, 0.7, 0.7)
         GameTooltip:Show()
@@ -640,9 +644,9 @@ function BGCommsUI:ShowChannelDropdown(button)
     dropdownFrame:Show()
 end
 
--- Show frame selection menu on minimap icon right-click
-function BGCommsUI:ShowFrameMenu(button)
-    local frames = {"Cap/Defend", "CTF", "Settings"}
+-- Show frame selection menu on minimap icon left-click
+function BGCommsUI:ShowFrameSelectionMenu(button)
+    local frames = {"Cap/Defend", "CTF"}
 
     -- Hide old menu if it exists
     if BGCommsFrameMenu then
@@ -650,10 +654,10 @@ function BGCommsUI:ShowFrameMenu(button)
     end
 
     -- Create dropdown frame with proper strata/level to appear on top
-    local menuFrame = CreateFrame("Frame", "BGCommsFrameMenu", UIParent)
+    local menuFrame = CreateFrame("Frame", "BGCommsFrameSelectionMenu", UIParent)
     menuFrame:SetFrameStrata("DIALOG")
     menuFrame:SetFrameLevel(100)
-    menuFrame:SetSize(130, 5 + (#frames * 28))
+    menuFrame:SetSize(120, 5 + (#frames * 28))
     menuFrame:SetPoint("TOP", button, "BOTTOM", 0, -5)
 
     -- Background with 70% opacity
@@ -681,9 +685,9 @@ function BGCommsUI:ShowFrameMenu(button)
 
     -- Create buttons for each frame
     for i, frameName in ipairs(frames) do
-        local btn = CreateFrame("Button", "BGFrameMenuOption" .. i, menuFrame)
+        local btn = CreateFrame("Button", "BGFrameSelectionOption" .. i, menuFrame)
         btn:SetFrameLevel(101)  -- Above background
-        btn:SetSize(120, 24)
+        btn:SetSize(110, 24)
         btn:SetPoint("TOPLEFT", menuFrame, "TOPLEFT", 5, -(2 + (i-1) * 28))
 
         -- Button background texture (highlight on hover)
@@ -709,8 +713,6 @@ function BGCommsUI:ShowFrameMenu(button)
                 BGCommsDB.activeFrame = "CTF"
                 BGCommsCTF:Show()
                 BGCommsUI:Hide()
-            elseif frameName == "Settings" then
-                BGCommsSettingsPanel:ToggleFrame()
             end
             closeMenu()
         end)
@@ -727,7 +729,7 @@ function BGCommsUI:ShowFrameMenu(button)
         -- Add separator line after each button except the last
         if i < #frames then
             local separator = menuFrame:CreateTexture(nil, "ARTWORK")
-            separator:SetSize(120, 1)
+            separator:SetSize(110, 1)
             separator:SetPoint("TOPLEFT", menuFrame, "TOPLEFT", 5, -(2 + i * 28 - 2))
             separator:SetColorTexture(0.5, 0.5, 0.5, 0.5)
         end
