@@ -1,5 +1,7 @@
 # Battleground Comms
 
+[![License](https://img.shields.io/github/license/ownjoo/bgcomms)](LICENSE)
+
 A comprehensive World of Warcraft addon for battleground communication with dual communication modes (Cap/Defend and CTF), priority-based messaging, custom macros, and intelligent channel selection.
 
 ## Features
