@@ -1,6 +1,7 @@
 # Battleground Comms
 
 [![License](https://img.shields.io/github/license/ownjoo/bgcomms)](LICENSE)
+[![Top language](https://img.shields.io/github/languages/top/ownjoo/bgcomms)](https://github.com/ownjoo/bgcomms) [![Stars](https://img.shields.io/github/stars/ownjoo/bgcomms)](https://github.com/ownjoo/bgcomms/stargazers) [![Forks](https://img.shields.io/github/forks/ownjoo/bgcomms)](https://github.com/ownjoo/bgcomms/forks) [![Issues](https://img.shields.io/github/issues/ownjoo/bgcomms)](https://github.com/ownjoo/bgcomms/issues) [![Pull requests](https://img.shields.io/github/issues-pr/ownjoo/bgcomms)](https://github.com/ownjoo/bgcomms/pulls)
 
 A comprehensive World of Warcraft addon for battleground communication with dual communication modes (Cap/Defend and CTF), priority-based messaging, custom macros, and intelligent channel selection.
 
